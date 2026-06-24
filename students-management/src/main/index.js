@@ -2,6 +2,15 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import createDatabase from './local_database/connection.js'
+import initSchema from './local_database/schema.js'
+import registerIpcHandlers from './ipc/index.js'
+
+const db = createDatabase()
+initSchema(db)
+
+// Đăng ký toàn bộ IPC Handlers từ thư mục ipc
+registerIpcHandlers(db)
 
 function createWindow() {
   // Create the browser window.

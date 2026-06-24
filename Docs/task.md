@@ -1,0 +1,23 @@
+# Danh Sách Công Việc (Task List)
+
+- `[x]` Bước 1: Khởi tạo database SQLite & Cấu hình connection
+  - `[x]` Cài đặt thư viện `better-sqlite3` và kiểm tra rebuild native dependency trong Electron
+  - `[x]` Viết mã nguồn khởi tạo SQLite Database, tự động tạo các bảng (`students`, `courses`, `enrollments`)
+  - `[x]` Bật foreign key support (`PRAGMA foreign_keys = ON;`) và WAL mode (`PRAGMA journal_mode = WAL;`)
+- `[X]` Bước 2: Thiết kế giao diện UI & IPC Bridge
+  - `[X]` Viết API trong Preload script để kết nối Main với Renderer
+  - `[X]` Xây dựng màn hình danh sách sinh viên (bao gồm thanh tìm kiếm, bộ lọc trạng thái/lớp)
+  - `[X]` Xây dựng form thêm/sửa sinh viên
+- `[X]` Bước 3: CRUD Sinh viên hoàn chỉnh
+  - `[X]` Thêm sinh viên (kiểm tra validate mã sinh viên unique)
+  - `[X]` Xem chi tiết sinh viên
+  - `[X]` Cập nhật thông tin sinh viên
+  - `[X]` Xóa sinh viên
+- `[X]` Bước 4: Transaction & Quản lý môn học (Courses & Enrollments)
+  - `[X]` Thêm môn học mới
+  - `[X]` Đăng ký môn học cho sinh viên (Sử dụng Transaction khi đăng ký hàng loạt hoặc xóa dữ liệu liên kết)
+- `[ ]` Bước 5: Index & Tối ưu hóa truy vấn
+  - `[ ]` Tạo index trên các cột tìm kiếm thường xuyên
+  - `[ ]` Kiểm tra query plan bằng `EXPLAIN QUERY PLAN`
+- `[ ]` Bước 6: Tích hợp FTS5
+  - `[ ]` Tạo virtual table FTS5 cho students để tìm kiếm nhanh

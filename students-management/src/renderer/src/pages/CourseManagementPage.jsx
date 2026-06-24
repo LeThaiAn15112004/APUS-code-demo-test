@@ -1,0 +1,173 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+
+import { useCallback, useEffect, useState } from 'react'
+import { courseApi } from '../index'
+
+const emptyCourse = {
+  course_code: '',
+  course_name: '',
+  credits: ''
+}
+
+function getFriendlyCourseError(error) {
+  const message = String(error?.message || error || '').toLowerCase()
+
+  if (message.includes('unique constraint failed')) {
+    return 'Mã môn học này đã tồn tại. Vui lòng nhập mã khác.'
+  }
+
+  return 'Không thể lưu môn học lúc này. Vui lòng kiểm tra thông tin và thử lại.'
+}
+
+function CourseManagementPage() {
+  const [courses, setCourses] = useState([])
+  const [form, setForm] = useState(emptyCourse)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [formError, setFormError] = useState('')
+
+  const loadCourses = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      setError('')
+      const rows = await courseApi.getAll()
+      setCourses(rows)
+    } catch (err) {
+      setError(err.message || 'Không thể tải danh sách môn học.')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadCourses()
+  }, [loadCourses])
+
+  function handleChange(event) {
+    const { name, value } = event.target
+    setForm((current) => ({ ...current, [name]: value }))
+  }
+
+  function validateForm() {
+    if (!form.course_code.trim()) return 'Vui lòng nhập mã môn học.'
+    if (!form.course_name.trim()) return 'Vui lòng nhập tên môn học.'
+    if (!Number.isInteger(Number(form.credits)) || Number(form.credits) <= 0) {
+      return 'Số tín chỉ phải là số nguyên lớn hơn 0.'
+    }
+
+    return ''
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    const validationError = validateForm()
+
+    if (validationError) {
+      setFormError(validationError)
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+      setFormError('')
+      await courseApi.create({
+        course_code: form.course_code.trim(),
+        course_name: form.course_name.trim(),
+        credits: Number(form.credits)
+      })
+      setForm(emptyCourse)
+      await loadCourses()
+    } catch (err) {
+      setFormError(getFriendlyCourseError(err))
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <main className="app-shell">
+      <section className="page-header">
+        <div>
+          <p className="eyebrow">Quản lý môn học</p>
+          <h1>Danh sách môn học</h1>
+        </div>
+      </section>
+
+      <section className="toolbar course-form-panel" aria-label="Thêm môn học">
+        <form className="course-form" onSubmit={handleSubmit}>
+          <label>
+            Mã môn học
+            <input
+              name="course_code"
+              placeholder="VD: CS109"
+              value={form.course_code}
+              onChange={handleChange}
+            />
+          </label>
+          <label>
+            Tên môn học
+            <input
+              name="course_name"
+              placeholder="Nhập tên môn học"
+              value={form.course_name}
+              onChange={handleChange}
+            />
+          </label>
+          <label>
+            Số tín chỉ
+            <input
+              name="credits"
+              min="1"
+              placeholder="VD: 3"
+              type="number"
+              value={form.credits}
+              onChange={handleChange}
+            />
+          </label>
+          <button className="button primary" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Đang lưu...' : 'Thêm môn học'}
+          </button>
+        </form>
+        {formError && <div className="alert compact">{formError}</div>}
+      </section>
+
+      {error && <div className="alert">{error}</div>}
+
+      <section className="table-panel">
+        <div className="table-summary">
+          <strong>{courses.length}</strong> môn học
+        </div>
+        {isLoading ? (
+          <div className="empty-state">Đang tải dữ liệu...</div>
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mã môn</th>
+                  <th>Tên môn học</th>
+                  <th>Số tín chỉ</th>
+                  <th>Ngày tạo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {courses.map((course) => (
+                  <tr key={course.id}>
+                    <td>{course.course_code}</td>
+                    <td>{course.course_name}</td>
+                    <td>{course.credits}</td>
+                    <td>{course.created_at || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {courses.length === 0 && <div className="empty-state">Chưa có môn học nào.</div>}
+          </div>
+        )}
+      </section>
+    </main>
+  )
+}
+
+export default CourseManagementPage

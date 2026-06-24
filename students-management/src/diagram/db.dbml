@@ -1,0 +1,39 @@
+// Database markup language (DBML) representing the Student Management System database schema
+
+Table Student {
+  id integer [primary key, increment]
+  student_code varchar [unique, not null]
+  full_name varchar [not null]
+  email varchar [unique]
+  phone varchar
+  date_of_birth date
+  gender varchar
+  address varchar
+  major varchar
+  class_name varchar
+  status varchar
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table Course {
+  id integer [primary key, increment]
+  course_code varchar [unique, not null]
+  course_name varchar [not null]
+  credits integer [not null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table Enrollment {
+  id integer [primary key, increment]
+  student_id integer [not null]
+  course_id integer [not null]
+  score float
+  semester varchar [not null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Ref: Enrollment.student_id > Student.id [delete: cascade]
+Ref: Enrollment.course_id > Course.id [delete: cascade]
