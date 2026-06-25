@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APUS - Hệ Thống Quản Lý Đào Tạo Chuyên Nghiệp</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for professional icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for premium look */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-[#f8fafc] text-slate-800 min-h-screen flex flex-col antialiased">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- SIDEBAR (APUS BRANDING) -->
+        <aside class="w-64 bg-white border-r border-slate-100 flex flex-col flex-shrink-0 z-20">
+            <!-- Sidebar Header -->
+            <div class="p-6 flex items-center justify-between border-b border-slate-50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-150">
+                        A
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg text-slate-900 tracking-tight">APUS</h1>
+                        <p class="text-xs text-slate-400 font-medium">Hệ thống Đào tạo</p>
+                    </div>
+                </div>
+                <button class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition" title="Thu gọn menu">
+                    <i class="fa-solid fa-chevron-left text-xs"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
+                <button onclick="switchTab('students')" id="btn-tab-students" class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition font-medium text-sm group text-indigo-600 bg-indigo-50/70">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold transition group-hover:scale-105">SV</span>
+                        <span class="text-slate-700 font-semibold group-hover:text-indigo-600">Quản lý sinh viên</span>
+                    </div>
+                    <i class="fa-solid fa-circle text-[6px] text-indigo-600"></i>
+                </button>
+
+                <button onclick="switchTab('subjects')" id="btn-tab-subjects" class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition font-medium text-sm group text-slate-500 hover:bg-slate-50">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-bold transition group-hover:scale-105">KH</span>
+                        <span class="text-slate-600 group-hover:text-indigo-600">Quản lý môn học</span>
+                    </div>
+                </button>
+            </nav>
+
+            <!-- Sidebar Footer (User Info) -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center text-slate-600 font-bold overflow-hidden shadow-sm">
+                        <img src="https://placehold.co/40x40/6366f1/ffffff?text=AD" alt="Admin" />
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-xs font-semibold text-slate-900 truncate">Senior Manager</h4>
+                        <p class="text-[10px] text-slate-400 truncate">admin@apus.edu.vn</p>
+                    </div>
+                    <button class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-white transition" title="Đăng xuất">
+                        <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN DASHBOARD CONTENT AREA -->
+        <main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+            
+            <!-- Global Header -->
+            <header class="bg-white border-b border-slate-100 h-16 flex items-center justify-between px-8 z-10">
+                <div class="flex items-center gap-4">
+                    <span class="text-xs font-semibold px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-100 rounded-full flex items-center gap-1.5 shadow-sm">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        Hệ thống hoạt động ổn định
+                    </span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <!-- Global Help Link for Admin -->
+                    <button class="text-slate-500 hover:text-slate-700 text-sm font-medium flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-circle-question"></i>
+                        <span>Hướng dẫn nhanh</span>
+                    </button>
+                    <div class="h-4 w-px bg-slate-200"></div>
+                    <p class="text-xs text-slate-400 font-medium">Hôm nay: <span id="current-date-span" class="text-slate-600 font-semibold">25/06/2026</span></p>
+                </div>
+            </header>
+
+            <!-- Content Workspace Scrollable Container -->
+            <div class="flex-1 overflow-y-auto p-8 relative">
+
+                <!-- TAB 1: STUDENT MANAGEMENT (Ref: image_056d24.png) -->
+                <section id="tab-students" class="space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Hệ thống Đào tạo</span>
+                            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-1">Danh sách sinh viên</h2>
+                            <p class="text-slate-500 text-sm mt-0.5">Quản lý thông tin hồ sơ, tình trạng học tập và đăng ký khóa học của sinh viên.</p>
+                        </div>
+                        <button onclick="openModal('modal-add-student')" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition-all shadow-md shadow-indigo-150 flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            <span>Thêm sinh viên mới</span>
+                        </button>
+                    </div>
+
+                    <!-- Search and Filters (Redesigned for UX - real-time search) -->
+                    <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <div class="md:col-span-7 relative">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">Tìm kiếm nhanh</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="student-search-input" onkeyup="filterStudents()" placeholder="Nhập tên, mã sinh viên hoặc email..." class="w-full pl-11 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition outline-none" />
+                            </div>
+                        </div>
+                        <div class="md:col-span-5">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">Bộ lọc theo Khóa học / Ngành</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-graduation-cap absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <select id="student-filter-course" onchange="filterStudents()" class="w-full pl-11 pr-10 py-2.5 bg-slate-50/50 border border-slate-200 focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition outline-none appearance-none cursor-pointer">
+                                    <option value="all">Tất cả khóa học / ngành</option>
+                                    <option value="Kỹ thuật phần mềm">Kỹ thuật phần mềm</option>
+                                    <option value="Khoa học máy tính">Khoa học máy tính</option>
+                                    <option value="Hệ thống thông tin">Hệ thống thông tin</option>
+                                    <option value="An toàn thông tin">An toàn thông tin</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Students Data Table Card (Ref: image_056d24.png) -->
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                        <!-- Table Top Status Info -->
+                        <div class="px-6 py-4 border-b border-slate-50 bg-slate-50/35 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-semibold text-slate-400">Tổng số kết quả:</span>
+                                <span id="student-total-badge" class="bg-indigo-50 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-md">6</span>
+                                <span class="text-xs text-slate-400">sinh viên</span>
+                            </div>
+                            <span class="text-[11px] text-slate-400 italic"><i class="fa-solid fa-info-circle mr-1"></i>Nhấp chuột vào dòng sinh viên để xem chi tiết nhanh</span>
+                        </div>
+
+                        <!-- Main Table -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50/40 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                                        <th class="py-4 px-6">Mã SV</th>
+                                        <th class="py-4 px-6">Họ tên</th>
+                                        <th class="py-4 px-6">Email / SĐT</th>
+                                        <th class="py-4 px-4">Lớp</th>
+                                        <th class="py-4 px-6">Ngành</th>
+                                        <th class="py-4 px-4 text-center">Trạng thái</th>
+                                        <th class="py-4 px-6 text-right">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="student-table-body" class="divide-y divide-slate-50 text-sm">
+                                    <!-- Dynamic rows loaded here via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Table Pagination (Ref: image_056d24.png) -->
+                        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/35 flex items-center justify-between">
+                            <p class="text-xs text-slate-400">Hiển thị <span class="font-medium text-slate-700">1-6</span> trên <span class="font-medium text-slate-700">49</span> sinh viên</p>
+                            <div class="flex items-center gap-1">
+                                <button class="px-3 py-1.5 border border-slate-200 text-slate-500 hover:bg-slate-100 text-xs font-medium rounded-lg transition" disabled>
+                                    Trước
+                                </button>
+                                <span class="text-xs text-slate-500 font-medium px-3">Trang 1 / 5</span>
+                                <button class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-medium rounded-lg transition shadow-sm">
+                                    Sau
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- TAB 2: DETAILED STUDENT PROFILE (Ref: image_056d67.png) -->
+                <section id="tab-student-detail" class="hidden space-y-6">
+                    <!-- Action Header -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <button onclick="switchTab('students')" class="p-2.5 bg-white border border-slate-200 hover:border-indigo-600 hover:text-indigo-600 rounded-xl transition text-slate-400 shadow-sm" title="Quay lại danh sách">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            <div>
+                                <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Hồ sơ chi tiết</span>
+                                <h2 id="detail-student-fullname" class="text-3xl font-extrabold text-slate-900 tracking-tight mt-0.5">Nguyễn Văn An</h2>
+                                <p class="text-slate-400 text-xs font-medium mt-0.5">Mã số sinh viên: <span id="detail-student-id" class="text-indigo-600 font-semibold bg-indigo-50/60 px-1.5 py-0.5 rounded">SV001</span></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="openEditStudentFromDetail()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition shadow-md shadow-indigo-150 flex items-center gap-2">
+                                <i class="fa-solid fa-user-pen text-xs"></i>
+                                <span>Cập nhật thông tin</span>
+                            </button>
+                            <button onclick="switchTab('students')" class="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium text-sm rounded-xl transition">
+                                Quay lại danh sách
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Personal Information Grid Card -->
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
+                        <div class="flex items-center gap-2 border-b border-slate-50 pb-4">
+                            <i class="fa-solid fa-id-card text-indigo-600 text-lg"></i>
+                            <h3 class="font-bold text-slate-900 text-base">Thông tin nhân thân & Học vấn</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <!-- Email -->
+                            <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-100/50">
+                                <span class="block text-xs font-medium text-slate-400">Địa chỉ Email</span>
+                                <span id="detail-student-email" class="block text-sm font-bold text-slate-800 mt-1 truncate">an.nv@gmail.com</span>
+                            </div>
+                            <!-- Phone -->
+                            <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-100/50">
+                                <span class="block text-xs font-medium text-slate-400">Điện thoại</span>
+                                <span id="detail-student-phone" class="block text-sm font-bold text-slate-800 mt-1">0912345678</span>
+                            </div>
+                            <!-- Birthday -->
+                            <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-100/50">
+                                <span class="block text-xs font-medium text-slate-400">Ngày sinh</span>
+                                <span id="detail-student-dob" class="block text-sm font-bold text-slate-800 mt-1">2004-05-12</span>
+                            </div>
+                            <!-- Gender -->
+                            <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-100/50">
+                                <span class="block text-xs font-medium text-slate-400">Giới tính</span>
+                                <span id="detail-student-gender" class="block text-sm font-bold text-slate-800 mt-1">Nam</span>
+                            </div>
+                            <!-- Address -->
+                            <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-100/50 md:col-span-2">
+                                <span class="block text-xs font-medium text-slate-400">Địa chỉ thường trú</span>
+                                <span id="detail-student-address" class="block text-sm font-bold text-slate-800 mt-1">Hà Nội</span>
+                            </div>
+                            <!-- Department -->
+                            <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-100/50">
+                                <span class="block text-xs font-medium text-slate-400">Chuyên ngành học</span>
+                                <span id="detail-student-major" class="block text-sm font-bold text-slate-800 mt-1">Công nghệ thông tin</span>
+                            </div>
+                            <!-- Class -->
+                            <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-100/50">
+                                <span class="block text-xs font-medium text-slate-400">Lớp hành chính</span>
+                                <span id="detail-student-class" class="block text-sm font-bold text-slate-800 mt-1">CNTT-K19A</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 bg-indigo-50/40 border border-indigo-100/50 rounded-xl p-4">
+                            <span class="text-xs font-medium text-indigo-700">Trạng thái học tập hiện tại:</span>
+                            <span id="detail-student-status-badge" class="px-3 py-1 bg-emerald-500 text-white font-semibold text-xs rounded-full">Đang học</span>
+                        </div>
+                    </div>
+
+                    <!-- Registered Courses Table (Ref: image_056d67.png) -->
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                        <div class="px-6 py-5 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-graduation-cap text-indigo-600"></i>
+                                <h3 class="font-bold text-slate-900 text-base">Khóa học & Môn học đã đăng ký</h3>
+                            </div>
+                            <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-md">
+                                <span id="detail-registered-count">4</span> môn học hoạt động
+                            </span>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50/50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                                        <th class="py-4 px-6">Mã môn</th>
+                                        <th class="py-4 px-6">Tên môn học</th>
+                                        <th class="py-4 px-6 text-center">Số tín chỉ</th>
+                                        <th class="py-4 px-6 text-center">Học kỳ đăng ký</th>
+                                        <th class="py-4 px-6 text-center">Điểm học tập</th>
+                                        <th class="py-4 px-6 text-right">Thao tác hủy môn</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detail-subjects-tbody" class="divide-y divide-slate-50 text-sm">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- TAB 3: SUBJECT MANAGEMENT (Ref: image_056d44.png & image_0570a9.png) -->
+                <section id="tab-subjects" class="hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Quản lý đào tạo</span>
+                            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-1">Danh sách môn học</h2>
+                            <p class="text-slate-500 text-sm mt-0.5">Xây dựng danh mục môn học, học phần tín chỉ toàn trường.</p>
+                        </div>
+                    </div>
+
+                    <!-- Inline Quick-Add Subject Form (Saves workflow step! - Ref: image_056d44.png) -->
+                    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-4">
+                        <div class="flex items-center gap-2 border-b border-slate-50 pb-3">
+                            <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+                            <h3 class="font-bold text-slate-800 text-sm uppercase">Tạo / Thêm mới học phần nhanh</h3>
+                        </div>
+                        <form id="add-subject-form" onsubmit="handleAddSubject(event)" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                            <div class="md:col-span-3">
+                                <label class="block text-xs font-semibold text-slate-500 mb-1.5">Mã môn học *</label>
+                                <input type="text" id="subj-input-code" required placeholder="VD: CS109" class="w-full px-4 py-2.5 bg-slate-50/50 border border-slate-200 focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition outline-none" />
+                            </div>
+                            <div class="md:col-span-5">
+                                <label class="block text-xs font-semibold text-slate-500 mb-1.5">Tên môn học học phần *</label>
+                                <input type="text" id="subj-input-name" required placeholder="Nhập tên môn học..." class="w-full px-4 py-2.5 bg-slate-50/50 border border-slate-200 focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition outline-none" />
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-semibold text-slate-500 mb-1.5">Số tín chỉ *</label>
+                                <input type="number" id="subj-input-credits" required min="1" max="10" placeholder="VD: 3" class="w-full px-4 py-2.5 bg-slate-50/50 border border-slate-200 focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition outline-none" />
+                            </div>
+                            <div class="md:col-span-2">
+                                <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition shadow-md shadow-indigo-100 flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-plus text-xs"></i>
+                                    <span>Thêm môn học</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Subjects List Table (Ref: image_056d44.png) -->
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-slate-50 bg-slate-50/35 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-semibold text-slate-400">Tổng số học phần hiện tại:</span>
+                                <span id="subject-total-badge" class="bg-indigo-50 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-md">9</span>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50/40 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                                        <th class="py-4 px-6">Mã môn</th>
+                                        <th class="py-4 px-6">Tên môn học</th>
+                                        <th class="py-4 px-6 text-center">Số tín chỉ</th>
+                                        <th class="py-4 px-6 text-center">Ngày tạo</th>
+                                        <th class="py-4 px-6 text-right">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subject-table-body" class="divide-y divide-slate-50 text-sm">
+                                    <!-- Dynamic rows from JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+
+    <!-- MODAL 1: ADD STUDENT (Ref: image_056dbc.png) -->
+    <div id="modal-add-student" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden transform transition-all scale-95 duration-300">
+            <!-- Modal Header -->
+            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/40">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-indigo-50 rounded-lg text-indigo-600 flex items-center justify-center">
+                        <i class="fa-solid fa-user-plus text-sm"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-lg">Thêm sinh viên mới</h3>
+                </div>
+                <button onclick="closeModal('modal-add-student')" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Modal Form Body -->
+            <form id="add-student-form" onsubmit="handleAddStudent(event)" class="p-6 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Student ID -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">Mã sinh viên *</label>
+                        <input type="text" id="add-sv-id" required placeholder="VD: SV011" class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition" />
+                    </div>
+                    <!-- Fullname -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">Họ tên *</label>
+                        <input type="text" id="add-sv-name" required placeholder="Nhập họ và tên..." class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition" />
+                    </div>
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">Email</label>
+                        <input type="email" id="add-sv-email" placeholder="name@example.com" class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition" />
+                    </div>
+                    <!-- Phone -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">Số điện thoại</label>
+                        <input type="tel" id="add-sv-phone" placeholder="Nhập số điện thoại..." class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition" />
+                    </div>
+                    <!-- DoB -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">Ngày sinh</label>
+                        <input type="date" id="add-sv-dob" class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition" />
+                    </div>
+                    <!-- Gender -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">Giới tính</label>
+                        <select id="add-sv-gender" class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition cursor-pointer">
+                            <option value="Chưa chọn">Chưa chọn</option>
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                        </select>
+                    </div>
+                    <!-- Department / Major -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">Ngành học</label>
+                        <select id="add-sv-major" class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition cursor-pointer">
+                            <option value="Kỹ thuật phần mềm">Kỹ thuật phần mềm</option>
+                            <option value="Khoa học máy tính">Khoa học máy tính</option>
+                            <option value="Hệ thống thông tin">Hệ thống thông tin</option>
+                            <option value="An toàn thông tin">An toàn thông tin</option>
+                        </select>
+                    </div>
+                    <!-- Class -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">Lớp hành chính</label>
+                        <input type="text" id="add-sv-class" placeholder="VD: CNTT-K20A" class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition" />
+                    </div>
+                    <!-- Status -->
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">Trạng thái học tập</label>
+                        <select id="add-sv-status" class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition cursor-pointer">
+                            <option value="Đang học">Đang học</option>
+                            <option value="Tốt nghiệp">Tốt nghiệp</option>
+                            <option value="Bảo lưu">Bảo lưu</option>
+                        </select>
+                    </div>
+                    <!-- Address -->
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">Địa chỉ</label>
+                        <textarea id="add-sv-address" rows="2" placeholder="Nhập địa chỉ tạm trú/thường trú..." class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition resize-none"></textarea>
+                    </div>
+                </div>
+
+                <!-- Footer Buttons -->
+                <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-5 mt-5">
+                    <button type="button" onclick="closeModal('modal-add-student')" class="px-5 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm rounded-xl transition">
+                        Hủy bỏ
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl transition shadow-md shadow-indigo-100">
+                        Lưu sinh viên
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- MODAL 2: EDIT STUDENT & COURSE SELECTION (Ref: image_056de0.png, image_05708a.png) -->
+    <div id="modal-edit-student" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full h-[90vh] flex flex-col overflow-hidden transform transition-all scale-95 duration-300">
+            <!-- Modal Header -->
+            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/40 flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-indigo-50 rounded-lg text-indigo-600 flex items-center justify-center">
+                        <i class="fa-solid fa-user-gear text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-lg">Chỉnh sửa thông tin học viên</h3>
+                        <p class="text-[10px] text-slate-400">Mã SV: <span id="edit-sv-id-label" class="font-bold text-indigo-600">SV002</span></p>
+                    </div>
+                </div>
+                <button onclick="closeModal('modal-edit-student')" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Scrollable Content Body -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                <!-- Basic Info Form Part -->
+                <form id="edit-student-form" class="space-y-4">
+                    <input type="hidden" id="edit-sv-id" />
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">Họ tên *</label>
+                            <input type="text" id="edit-sv-name" required class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">Email</label>
+                            <input type="email" id="edit-sv-email" class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">Số điện thoại</label>
+                            <input type="tel" id="edit-sv-phone" class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">Ngày sinh</label>
+                            <input type="date" id="edit-sv-dob" class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">Giới tính</label>
+                            <select id="edit-sv-gender" class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition cursor-pointer">
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">Ngành học</label>
+                            <select id="edit-sv-major" class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition cursor-pointer">
+                                <option value="Kỹ thuật phần mềm">Kỹ thuật phần mềm</option>
+                                <option value="Khoa học máy tính">Khoa học máy tính</option>
+                                <option value="Hệ thống thông tin">Hệ thống thông tin</option>
+                                <option value="An toàn thông tin">An toàn thông tin</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">Lớp hành chính</label>
+                            <input type="text" id="edit-sv-class" class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">Trạng thái</label>
+                            <select id="edit-sv-status" class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition cursor-pointer">
+                                <option value="Đang học">Đang học</option>
+                                <option value="Tốt nghiệp">Tốt nghiệp</option>
+                                <option value="Bảo lưu">Bảo lưu</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">Địa chỉ</label>
+                            <textarea id="edit-sv-address" rows="1" class="w-full px-4 py-2.5 border border-slate-200 focus:border-indigo-500 rounded-xl text-sm outline-none transition resize-none"></textarea>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Redesigned Course Registration Matrix (Ref: image_05708a.png) -->
+                <div class="border-t border-slate-100 pt-6 space-y-4">
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-sm">Quản lý khóa học & môn học đã đăng ký</h4>
+                        <p class="text-xs text-slate-400 mt-0.5">Tích thêm khóa học mới hoặc bỏ tích khóa học không còn đăng ký nữa. Hệ thống tự cập nhật danh sách.</p>
+                    </div>
+
+                    <!-- Visual Course Checkbox Grid -->
+                    <div id="course-selection-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-1">
+                        <!-- Content auto populated via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Action Panel -->
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3 flex-shrink-0">
+                <button type="button" onclick="closeModal('modal-edit-student')" class="px-5 py-2.5 border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold text-sm rounded-xl transition">
+                    Hủy bỏ
+                </button>
+                <button type="button" onclick="handleSaveEditStudent()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl transition shadow-md shadow-indigo-150">
+                    Lưu các thay đổi
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL 3: DELETE STUDENT OR COURSE CONFIRMATION (Ref: image_056d86.png) -->
+    <div id="modal-delete-confirm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden p-6 transform transition-all scale-95 duration-300 space-y-4">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 flex-shrink-0">
+                    <i class="fa-solid fa-triangle-exclamation text-lg animate-bounce"></i>
+                </div>
+                <div class="space-y-1">
+                    <h3 id="delete-modal-title" class="font-extrabold text-slate-900 text-lg">Xác nhận xóa khóa học</h3>
+                    <p id="delete-modal-desc" class="text-sm text-slate-500">Bạn có chắc chắn muốn bỏ khóa học khỏi học viên này không? Thao tác này không thể hoàn tác.</p>
+                </div>
+            </div>
+
+            <!-- Hidden pointers to help JS perform deletions dynamically -->
+            <input type="hidden" id="delete-pointer-type" />
+            <input type="hidden" id="delete-pointer-target-id" />
+            <input type="hidden" id="delete-pointer-sub-id" />
+
+            <!-- Footer actions -->
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button onclick="closeModal('modal-delete-confirm')" class="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-sm rounded-xl transition">
+                    Hủy bỏ
+                </button>
+                <button onclick="executeActionDeletion()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-medium text-sm rounded-xl transition shadow-md shadow-rose-100">
+                    Xác nhận xóa
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- GLOBAL SUCCESS/ERROR TOAST NOTIFICATION CONTAINER (UX Improvement over Alert) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+
+    <script>
+        // Default Mock Data for Students matches all screenshots perfectly
+        let students = [
+            {
+                id: "SV001",
+                name: "Nguyễn Văn An",
+                email: "an.nv@gmail.com",
+                phone: "0912345678",
+                dob: "2004-05-12",
+                gender: "Nam",
+                class: "CNTT-K19A",
+                major: "Kỹ thuật phần mềm",
+                status: "Đang học",
+                address: "Hà Nội",
+                courses: [
+                    { code: "CS102", name: "Cấu trúc dữ liệu và giải thuật", credits: 4, semester: "Học kỳ 2 - 2025-2026", grade: "-" },
+                    { code: "CS103", name: "Cơ sở dữ liệu", credits: 3, semester: "Học kỳ 1 - 2025-2026", grade: "4.4" },
+                    { code: "CS107", name: "Trí tuệ nhân tạo", credits: 3, semester: "Học kỳ 1 - 2025-2026", grade: "4.2" },
+                    { code: "CS104", name: "Mạng máy tính", credits: 3, semester: "Học kỳ 1 - 2024-2025", grade: "5.3" }
+                ]
+            },
+            {
+                id: "SV002",
+                name: "Trần Thị Bình",
+                email: "binh.tt@gmail.com",
+                phone: "0923456789",
+                dob: "2004-09-23",
+                gender: "Nữ",
+                class: "KTPM-K19A1",
+                major: "Kỹ thuật phần mềm",
+                status: "Đang học",
+                address: "Hải Phòng",
+                courses: [
+                    { code: "CS101", name: "Nhập môn lập trình", credits: 4, semester: "Học kỳ 1 - 2024-2025", grade: "8.0" },
+                    { code: "CS102", name: "Cấu trúc dữ liệu và giải thuật", credits: 4, semester: "Học kỳ 2 - 2025-2026", grade: "7.5" },
+                    { code: "CS103", name: "Cơ sở dữ liệu", credits: 3, semester: "Học kỳ 1 - 2025-2026", grade: "6.5" },
+                    { code: "CS105", name: "Phát triển ứng dụng Web", credits: 3, semester: "Học kỳ 2 - 2025-2026", grade: "-" },
+                    { code: "CS106", name: "Kỹ nghệ phần mềm", credits: 3, semester: "Học kỳ 1 - 2025-2026", grade: "9.0" }
+                ]
+            },
+            {
+                id: "SV007",
+                name: "Vũ Thị Phương",
+                email: "phuong.vt@gmail.com",
+                phone: "0934567890",
+                dob: "2004-11-10",
+                gender: "Nữ",
+                class: "KTPM-K19A",
+                major: "Kỹ thuật phần mềm",
+                status: "Đang học",
+                address: "Nam Định",
+                courses: [
+                    { code: "CS101", name: "Nhập môn lập trình", credits: 4, semester: "Học kỳ 1 - 2024-2025", grade: "9.2" },
+                    { code: "CS103", name: "Cơ sở dữ liệu", credits: 3, semester: "Học kỳ 1 - 2025-2026", grade: "7.0" }
+                ]
+            },
+            {
+                id: "SV008",
+                name: "Đặng Hoài Giang",
+                email: "giang.dh@gmail.com",
+                phone: "0945678901",
+                dob: "2004-03-05",
+                gender: "Nữ",
+                class: "KHMT-K19B",
+                major: "Khoa học máy tính",
+                status: "Đang học",
+                address: "Bắc Ninh",
+                courses: [
+                    { code: "CS101", name: "Nhập môn lập trình", credits: 4, semester: "Học kỳ 1 - 2024-2025", grade: "8.5" }
+                ]
+            },
+            {
+                id: "SV009",
+                name: "Bùi Minh Hải",
+                email: "hai.bm@gmail.com",
+                phone: "0956789012",
+                dob: "2003-08-14",
+                gender: "Nam",
+                class: "HTTT-K19B",
+                major: "Hệ thống thông tin",
+                status: "Đang học",
+                address: "Quảng Ninh",
+                courses: [
+                    { code: "CS103", name: "Cơ sở dữ liệu", credits: 3, semester: "Học kỳ 1 - 2025-2026", grade: "6.0" }
+                ]
+            },
+            {
+                id: "SV010",
+                name: "Đỗ Quốc Khánh",
+                email: "khanh.dq@gmail.com",
+                phone: "0967890123",
+                dob: "2004-12-30",
+                gender: "Nam",
+                class: "ATTT-K19B",
+                major: "An toàn thông tin",
+                status: "Tốt nghiệp",
+                address: "Hà Tĩnh",
+                courses: [
+                    { code: "CS101", name: "Nhập môn lập trình", credits: 4, semester: "Học kỳ 1 - 2024-2025", grade: "9.5" },
+                    { code: "CS102", name: "Cấu trúc dữ liệu và giải thuật", credits: 4, semester: "Học kỳ 2 - 2025-2026", grade: "8.5" },
+                    { code: "CS103", name: "Cơ sở dữ liệu", credits: 3, semester: "Học kỳ 1 - 2025-2026", grade: "9.0" },
+                    { code: "CS104", name: "Mạng máy tính", credits: 3, semester: "Học kỳ 1 - 2024-2025", grade: "8.5" },
+                    { code: "CS108", name: "An toàn thông tin", credits: 3, semester: "Học kỳ 1 - 2025-2026", grade: "10.0" }
+                ]
+            }
+        ];
+
+        // Subject list mock matches image_056d44.png & image_0570a9.png
+        let subjects = [
+            { code: "CS101", name: "Nhập môn lập trình", credits: 4, createdDate: "2026-06-22 07:06:07" },
+            { code: "CS102", name: "Cấu trúc dữ liệu và giải thuật", credits: 4, createdDate: "2026-06-22 07:06:07" },
+            { code: "CS103", name: "Cơ sở dữ liệu", credits: 3, createdDate: "2026-06-22 07:06:07" },
+            { code: "CS104", name: "Mạng máy tính", credits: 3, createdDate: "2026-06-22 07:06:07" },
+            { code: "CS105", name: "Phát triển ứng dụng Web", credits: 3, createdDate: "2026-06-22 07:06:07" },
+            { code: "CS106", name: "Kỹ nghệ phần mềm", credits: 3, createdDate: "2026-06-22 07:06:07" },
+            { code: "CS107", name: "Trí tuệ nhân tạo", credits: 3, createdDate: "2026-06-22 07:06:07" },
+            { code: "CS108", name: "An toàn thông tin", credits: 3, createdDate: "2026-06-22 07:06:07" }
+        ];
+
+        let selectedStudentIdForDetail = null;
+
+        // Startup functions
+        window.onload = function() {
+            renderStudentsTable(students);
+            renderSubjectsTable(subjects);
+            
+            // Set dynamic date based on system clock format
+            const d = new Date();
+            const pad = (n) => n < 10 ? '0' + n : n;
+            document.getElementById('current-date-span').innerText = `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+        }
+
+        // Tab switcher
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.getElementById('tab-students').classList.add('hidden');
+            document.getElementById('tab-student-detail').classList.add('hidden');
+            document.getElementById('tab-subjects').classList.add('hidden');
+
+            // Reset navigation active styles
+            const btnStudents = document.getElementById('btn-tab-students');
+            const btnSubjects = document.getElementById('btn-tab-subjects');
+
+            btnStudents.className = "w-full flex items-center justify-between px-4 py-3 rounded-xl transition font-medium text-sm group text-slate-500 hover:bg-slate-50";
+            btnSubjects.className = "w-full flex items-center justify-between px-4 py-3 rounded-xl transition font-medium text-sm group text-slate-500 hover:bg-slate-50";
+            
+            // Re-apply inactive SV/KH badge stylings
+            btnStudents.querySelector('span').className = "w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-bold transition group-hover:scale-105";
+            btnSubjects.querySelector('span').className = "w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-bold transition group-hover:scale-105";
+            
+            // Remove navigation indicators
+            const currentIndicators = document.querySelectorAll('nav button i.fa-solid.fa-circle');
+            currentIndicators.forEach(el => el.remove());
+
+            if (tabId === 'students') {
+                document.getElementById('tab-students').classList.remove('hidden');
+                btnStudents.className = "w-full flex items-center justify-between px-4 py-3 rounded-xl transition font-medium text-sm group text-indigo-600 bg-indigo-50/70";
+                btnStudents.querySelector('span').className = "w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold transition group-hover:scale-105";
+                btnStudents.insertAdjacentHTML('beforeend', '<i class="fa-solid fa-circle text-[6px] text-indigo-600"></i>');
+                renderStudentsTable(students);
+            } else if (tabId === 'detail') {
+                document.getElementById('tab-student-detail').classList.remove('hidden');
+                btnStudents.className = "w-full flex items-center justify-between px-4 py-3 rounded-xl transition font-medium text-sm group text-indigo-600 bg-indigo-50/70";
+                btnStudents.querySelector('span').className = "w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold transition group-hover:scale-105";
+            } else if (tabId === 'subjects') {
+                document.getElementById('tab-subjects').classList.remove('hidden');
+                btnSubjects.className = "w-full flex items-center justify-between px-4 py-3 rounded-xl transition font-medium text-sm group text-indigo-600 bg-indigo-50/70";
+                btnSubjects.querySelector('span').className = "w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold transition group-hover:scale-105";
+                btnSubjects.insertAdjacentHTML('beforeend', '<i class="fa-solid fa-circle text-[6px] text-indigo-600"></i>');
+                renderSubjectsTable(subjects);
+            }
+        }
+
+        // Dynamic Toast (Replaces Javascript Alert)
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const id = 'toast-' + Math.random().toString(36).substr(2, 9);
+            
+            let bgClass = "bg-white border-l-4 border-emerald-500 shadow-xl text-slate-800";
+            let icon = "fa-circle-check text-emerald-500";
+            if (type === 'error') {
+                bgClass = "bg-white border-l-4 border-rose-500 shadow-xl text-slate-800";
+                icon = "fa-circle-xmark text-rose-500";
+            } else if (type === 'warning') {
+                bgClass = "bg-white border-l-4 border-amber-500 shadow-xl text-slate-800";
+                icon = "fa-triangle-exclamation text-amber-500";
+            }
+
+            const toastHTML = `
+                <div id="${id}" class="flex items-center gap-3 p-4 rounded-xl ${bgClass} w-80 transform transition-all translate-y-5 opacity-0 duration-300 pointer-events-auto">
+                    <i class="fa-solid ${icon} text-lg flex-shrink-0"></i>
+                    <p class="text-xs font-medium flex-1">${message}</p>
+                    <button onclick="document.getElementById('${id}').remove()" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-xs"></i></button>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', toastHTML);
+            const el = document.getElementById(id);
+            setTimeout(() => {
+                el.classList.remove('translate-y-5', 'opacity-0');
+            }, 10);
+
+            // Auto dismiss after 4 seconds
+            setTimeout(() => {
+                if (document.getElementById(id)) {
+                    el.classList.add('translate-y-2', 'opacity-0');
+                    setTimeout(() => el.remove(), 300);
+                }
+            }, 4000);
+        }
+
+        // Modal triggers
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            setTimeout(() => {
+                modal.querySelector('.transform').classList.remove('scale-95');
+                modal.querySelector('.transform').classList.add('scale-100');
+            }, 50);
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.querySelector('.transform').classList.remove('scale-100');
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }, 150);
+        }
+
+        // Render functions with premium components & status colors
+        function renderStudentsTable(studentList) {
+            const tbody = document.getElementById('student-table-body');
+            tbody.innerHTML = '';
+            
+            studentList.forEach(student => {
+                // Determine active state colors
+                let badgeClass = "bg-emerald-50 text-emerald-700 border border-emerald-200/50";
+                if (student.status === "Tốt nghiệp") {
+                    badgeClass = "bg-indigo-50 text-indigo-700 border border-indigo-200/50";
+                } else if (student.status === "Bảo lưu") {
+                    badgeClass = "bg-amber-50 text-amber-700 border border-amber-200/50";
+                }
+
+                const row = `
+                    <tr class="hover:bg-indigo-50/15 cursor-pointer transition group">
+                        <td onclick="viewStudentDetails('${student.id}')" class="py-4 px-6 font-bold text-slate-900 group-hover:text-indigo-600">${student.id}</td>
+                        <td onclick="viewStudentDetails('${student.id}')" class="py-4 px-6 font-semibold text-slate-800">${student.name}</td>
+                        <td onclick="viewStudentDetails('${student.id}')" class="py-4 px-6">
+                            <div class="flex flex-col">
+                                <span class="text-slate-700 text-xs font-medium">${student.email}</span>
+                                <span class="text-[10px] text-slate-400 mt-0.5">${student.phone || 'Chưa cập nhật'}</span>
+                            </div>
+                        </td>
+                        <td onclick="viewStudentDetails('${student.id}')" class="py-4 px-4 font-medium text-slate-600">${student.class || 'N/A'}</td>
+                        <td onclick="viewStudentDetails('${student.id}')" class="py-4 px-6 text-xs text-slate-500 font-semibold max-w-[180px] truncate">${student.major}</td>
+                        <td onclick="viewStudentDetails('${student.id}')" class="py-4 px-4 text-center">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold inline-block ${badgeClass}">
+                                ${student.status}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 text-right">
+                            <div class="flex items-center justify-end gap-1.5 opacity-80 group-hover:opacity-100 transition">
+                                <button onclick="event.stopPropagation(); viewStudentDetails('${student.id}')" class="p-2 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-800 rounded-xl transition text-xs font-bold flex items-center gap-1" title="Xem chi tiết">
+                                    <i class="fa-solid fa-eye"></i>
+                                    <span>Chi tiết</span>
+                                </button>
+                                <button onclick="event.stopPropagation(); openEditStudentModal('${student.id}')" class="p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-800 rounded-xl transition text-xs font-semibold flex items-center gap-1" title="Chỉnh sửa">
+                                    <i class="fa-solid fa-pencil"></i>
+                                    <span>Sửa</span>
+                                </button>
+                                <button onclick="event.stopPropagation(); triggerDeleteConfirm('student', '${student.id}')" class="p-2 text-rose-600 hover:bg-rose-50 hover:text-rose-800 rounded-xl transition text-xs font-semibold flex items-center gap-1" title="Xóa hồ sơ">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                    <span>Xóa</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+
+            // Update badges
+            document.getElementById('student-total-badge').innerText = studentList.length;
+        }
+
+        function renderSubjectsTable(subjectList) {
+            const tbody = document.getElementById('subject-table-body');
+            tbody.innerHTML = '';
+
+            subjectList.forEach(subject => {
+                const row = `
+                    <tr class="hover:bg-slate-50/50 transition">
+                        <td class="py-4 px-6 font-bold text-slate-900">${subject.code}</td>
+                        <td class="py-4 px-6 font-semibold text-slate-800">${subject.name}</td>
+                        <td class="py-4 px-6 text-center font-bold text-indigo-600">
+                            <span class="px-3 py-1 bg-indigo-50 border border-indigo-100/50 rounded-lg text-xs">
+                                ${subject.credits} tín chỉ
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 text-center text-slate-400 text-xs">${subject.createdDate}</td>
+                        <td class="py-4 px-6 text-right">
+                            <button onclick="triggerDeleteConfirm('subject', '${subject.code}')" class="p-2 text-rose-500 hover:bg-rose-50 hover:text-rose-700 rounded-lg transition" title="Xóa môn học">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+
+            // Update global subject badge
+            document.getElementById('subject-total-badge').innerText = subjectList.length;
+        }
+
+        // Search & filter action (Real-time & instant)
+        function filterStudents() {
+            const searchVal = document.getElementById('student-search-input').value.toLowerCase().trim();
+            const filterVal = document.getElementById('student-filter-course').value;
+
+            const filtered = students.filter(student => {
+                const matchesSearch = student.id.toLowerCase().includes(searchVal) || 
+                                      student.name.toLowerCase().includes(searchVal) || 
+                                      student.email.toLowerCase().includes(searchVal);
+                
+                const matchesMajor = filterVal === 'all' || student.major === filterVal;
+
+                return matchesSearch && matchesMajor;
+            });
+
+            renderStudentsTable(filtered);
+        }
+
+        // View detail profile screen transition (Ref: image_056d67.png)
+        function viewStudentDetails(studentId) {
+            const student = students.find(s => s.id === studentId);
+            if (!student) return;
+
+            selectedStudentIdForDetail = studentId;
+
+            // Fill text fields
+            document.getElementById('detail-student-fullname').innerText = student.name;
+            document.getElementById('detail-student-id').innerText = student.id;
+            document.getElementById('detail-student-email').innerText = student.email || 'Chưa cập nhật';
+            document.getElementById('detail-student-phone').innerText = student.phone || 'Chưa cập nhật';
+            document.getElementById('detail-student-dob').innerText = student.dob || 'Chưa cập nhật';
+            document.getElementById('detail-student-gender').innerText = student.gender || 'Chưa chọn';
+            document.getElementById('detail-student-address').innerText = student.address || 'Chưa cập nhật';
+            document.getElementById('detail-student-major').innerText = student.major;
+            document.getElementById('detail-student-class').innerText = student.class || 'Chưa phân lớp';
+
+            // Fill active state
+            const badgeEl = document.getElementById('detail-student-status-badge');
+            badgeEl.innerText = student.status;
+            badgeEl.className = "px-3 py-1 font-semibold text-xs rounded-full inline-block";
+            if (student.status === "Đang học") {
+                badgeEl.classList.add('bg-emerald-500', 'text-white');
+            } else if (student.status === "Tốt nghiệp") {
+                badgeEl.classList.add('bg-indigo-600', 'text-white');
+            } else {
+                badgeEl.classList.add('bg-amber-500', 'text-white');
+            }
+
+            // Fill course registrations
+            renderDetailRegisteredCourses(student);
+
+            // Transition Tab
+            switchTab('detail');
+        }
+
+        function renderDetailRegisteredCourses(student) {
+            const tbody = document.getElementById('detail-subjects-tbody');
+            tbody.innerHTML = '';
+
+            document.getElementById('detail-registered-count').innerText = student.courses.length;
+
+            if (student.courses.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-400 text-xs">
+                            <i class="fa-solid fa-circle-exclamation text-slate-300 text-lg mb-2 block"></i>
+                            Sinh viên này chưa đăng ký bất kỳ môn học nào.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            student.courses.forEach(c => {
+                const row = `
+                    <tr class="hover:bg-slate-50/30 transition">
+                        <td class="py-4 px-6 font-bold text-indigo-600">${c.code}</td>
+                        <td class="py-4 px-6 font-medium text-slate-800">${c.name}</td>
+                        <td class="py-4 px-6 text-center font-bold text-slate-600">${c.credits}</td>
+                        <td class="py-4 px-6 text-center text-xs text-slate-500 font-medium">${c.semester}</td>
+                        <td class="py-4 px-6 text-center font-bold text-slate-800">
+                            ${c.grade === '-' ? '<span class="text-slate-400 font-normal">Chưa có điểm</span>' : `<span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-100">${c.grade}</span>`}
+                        </td>
+                        <td class="py-4 px-6 text-right">
+                            <button onclick="triggerDeleteConfirm('registered-course', '${student.id}', '${c.code}')" class="px-3 py-1.5 border border-rose-100 hover:border-rose-500 text-rose-600 hover:bg-rose-50 rounded-xl transition text-xs font-semibold flex items-center justify-center gap-1 ml-auto" title="Hủy đăng ký môn học">
+                                <i class="fa-solid fa-trash-can"></i>
+                                <span>Xóa</span>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        // Add student submit handler
+        function handleAddStudent(e) {
+            e.preventDefault();
+            
+            const newId = document.getElementById('add-sv-id').value.trim();
+            
+            // Check ID duplicate for pristine UX
+            if (students.some(s => s.id === newId)) {
+                showToast("Mã sinh viên này đã tồn tại trong cơ sở dữ liệu!", "error");
+                return;
+            }
+
+            const newStudent = {
+                id: newId,
+                name: document.getElementById('add-sv-name').value.trim(),
+                email: document.getElementById('add-sv-email').value.trim(),
+                phone: document.getElementById('add-sv-phone').value.trim(),
+                dob: document.getElementById('add-sv-dob').value,
+                gender: document.getElementById('add-sv-gender').value,
+                major: document.getElementById('add-sv-major').value,
+                class: document.getElementById('add-sv-class').value.trim() || 'N/A',
+                status: document.getElementById('add-sv-status').value,
+                address: document.getElementById('add-sv-address').value.trim(),
+                courses: []
+            };
+
+            students.unshift(newStudent); // add to top
+            renderStudentsTable(students);
+            
+            closeModal('modal-add-student');
+            document.getElementById('add-student-form').reset();
+            
+            showToast(`Thêm thành công sinh viên mới ${newStudent.name} (${newStudent.id})!`, "success");
+        }
+
+        // Add Course submit handler (Ref: image_056d44.png)
+        function handleAddSubject(e) {
+            e.preventDefault();
+
+            const code = document.getElementById('subj-input-code').value.trim().toUpperCase();
+            
+            if (subjects.some(sub => sub.code === code)) {
+                showToast("Mã môn học này đã tồn tại trên hệ thống!", "error");
+                return;
+            }
+
+            const d = new Date();
+            const pad = (n) => n < 10 ? '0' + n : n;
+            const formattedDate = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+
+            const newSubj = {
+                code: code,
+                name: document.getElementById('subj-input-name').value.trim(),
+                credits: parseInt(document.getElementById('subj-input-credits').value),
+                createdDate: formattedDate
+            };
+
+            subjects.push(newSubj);
+            renderSubjectsTable(subjects);
+            
+            document.getElementById('add-subject-form').reset();
+            showToast(`Thêm học phần ${newSubj.name} (${newSubj.code}) thành công!`);
+        }
+
+        // Edit student view open (Ref: image_056de0.png & image_05708a.png Matrix selection)
+        function openEditStudentModal(studentId) {
+            const student = students.find(s => s.id === studentId);
+            if (!student) return;
+
+            document.getElementById('edit-sv-id').value = student.id;
+            document.getElementById('edit-sv-id-label').innerText = student.id;
+            document.getElementById('edit-sv-name').value = student.name;
+            document.getElementById('edit-sv-email').value = student.email || '';
+            document.getElementById('edit-sv-phone').value = student.phone || '';
+            document.getElementById('edit-sv-dob').value = student.dob || '';
+            document.getElementById('edit-sv-gender').value = student.gender || 'Nam';
+            document.getElementById('edit-sv-major').value = student.major;
+            document.getElementById('edit-sv-class').value = student.class || '';
+            document.getElementById('edit-sv-status').value = student.status || 'Đang học';
+            document.getElementById('edit-sv-address').value = student.address || '';
+
+            // Generate smart interactive matrix list (Ref: image_05708a.png checkboxes)
+            const gridContainer = document.getElementById('course-selection-grid');
+            gridContainer.innerHTML = '';
+
+            subjects.forEach(subject => {
+                const isRegistered = student.courses.some(c => c.code === subject.code);
+                
+                // Card for premium touch experience
+                const cardHTML = `
+                    <label class="flex items-start gap-3 p-3 rounded-xl border ${isRegistered ? 'bg-indigo-50/50 border-indigo-200' : 'bg-white border-slate-200'} hover:bg-slate-50 transition cursor-pointer select-none">
+                        <div class="flex items-center h-5">
+                            <input type="checkbox" data-subject-code="${subject.code}" ${isRegistered ? 'checked' : ''} onchange="toggleCourseSelectionCard(this)" class="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer" />
+                        </div>
+                        <div class="flex-1 min-w-0 text-xs">
+                            <span class="block font-bold text-indigo-600">${subject.code}</span>
+                            <span class="block font-semibold text-slate-800 truncate mt-0.5">${subject.name}</span>
+                            <span class="block text-[10px] text-slate-400 mt-0.5">${subject.credits} tín chỉ</span>
+                            ${isRegistered ? '<span class="inline-block px-1.5 py-0.5 bg-indigo-100 text-indigo-800 font-bold rounded text-[9px] mt-1">Đã đăng ký</span>' : ''}
+                        </div>
+                    </label>
+                `;
+                gridContainer.insertAdjacentHTML('beforeend', cardHTML);
+            });
+
+            openModal('modal-edit-student');
+        }
+
+        // Edit directly from within Detailed tab
+        function openEditStudentFromDetail() {
+            if (selectedStudentIdForDetail) {
+                openEditStudentModal(selectedStudentIdForDetail);
+            }
+        }
+
+        // Toggle card highlighting on selection change (UX microinteraction)
+        function toggleCourseSelectionCard(checkbox) {
+            const label = checkbox.closest('label');
+            const code = checkbox.getAttribute('data-subject-code');
+            const isChecked = checkbox.checked;
+
+            if (isChecked) {
+                label.className = "flex items-start gap-3 p-3 rounded-xl border bg-indigo-50/50 border-indigo-200 hover:bg-slate-50 transition cursor-pointer select-none";
+                // Add tiny inline badge if not there already
+                if (!label.querySelector('.bg-indigo-100')) {
+                    label.querySelector('div.flex-1').insertAdjacentHTML('beforeend', '<span class="inline-block px-1.5 py-0.5 bg-indigo-100 text-indigo-800 font-bold rounded text-[9px] mt-1">Đã đăng ký</span>');
+                }
+            } else {
+                label.className = "flex items-start gap-3 p-3 rounded-xl border bg-white border-slate-200 hover:bg-slate-50 transition cursor-pointer select-none";
+                const badge = label.querySelector('.bg-indigo-100');
+                if (badge) badge.remove();
+            }
+        }
+
+        // Save modifications
+        function handleSaveEditStudent() {
+            const svId = document.getElementById('edit-sv-id').value;
+            const studentIdx = students.findIndex(s => s.id === svId);
+            if (studentIdx === -1) return;
+
+            const name = document.getElementById('edit-sv-name').value.trim();
+            if (!name) {
+                showToast("Họ tên sinh viên không được để trống!", "error");
+                return;
+            }
+
+            // Save basic fields
+            students[studentIdx].name = name;
+            students[studentIdx].email = document.getElementById('edit-sv-email').value.trim();
+            students[studentIdx].phone = document.getElementById('edit-sv-phone').value.trim();
+            students[studentIdx].dob = document.getElementById('edit-sv-dob').value;
+            students[studentIdx].gender = document.getElementById('edit-sv-gender').value;
+            students[studentIdx].major = document.getElementById('edit-sv-major').value;
+            students[studentIdx].class = document.getElementById('edit-sv-class').value.trim();
+            students[studentIdx].status = document.getElementById('edit-sv-status').value;
+            students[studentIdx].address = document.getElementById('edit-sv-address').value.trim();
+
+            // Sync registered courses from Matrix inputs
+            const checkedBoxes = document.querySelectorAll('#course-selection-grid input[type="checkbox"]:checked');
+            const newCourseCodes = Array.from(checkedBoxes).map(box => box.getAttribute('data-subject-code'));
+
+            // Build new registration objects maintaining old grades if any
+            const existingCourses = students[studentIdx].courses;
+            const syncedCourses = newCourseCodes.map(code => {
+                const oldMatch = existingCourses.find(c => c.code === code);
+                const subjDef = subjects.find(s => s.code === code);
+
+                return {
+                    code: code,
+                    name: subjDef ? subjDef.name : "N/A",
+                    credits: subjDef ? subjDef.credits : 3,
+                    semester: oldMatch ? oldMatch.semester : "Học kỳ 1 - 2026-2027",
+                    grade: oldMatch ? oldMatch.grade : "-"
+                };
+            });
+
+            students[studentIdx].courses = syncedCourses;
+
+            // Render views
+            renderStudentsTable(students);
+            if (selectedStudentIdForDetail === svId) {
+                viewStudentDetails(svId); // sync detailed view immediately!
+            }
+
+            closeModal('modal-edit-student');
+            showToast(`Cập nhật thông tin sinh viên ${name} thành công!`);
+        }
+
+        // Warn and confirm deletion workflow (Reduces risk of user error)
+        function triggerDeleteConfirm(type, targetId, subId = '') {
+            const titleEl = document.getElementById('delete-modal-title');
+            const descEl = document.getElementById('delete-modal-desc');
+
+            document.getElementById('delete-pointer-type').value = type;
+            document.getElementById('delete-pointer-target-id').value = targetId;
+            document.getElementById('delete-pointer-sub-id').value = subId;
+
+            if (type === 'student') {
+                const sv = students.find(s => s.id === targetId);
+                titleEl.innerText = "Xóa hồ sơ sinh viên";
+                descEl.innerText = `Bạn có chắc chắn muốn xóa toàn bộ hồ sơ của học viên "${sv ? sv.name : targetId}" ra khỏi hệ thống? Dữ liệu điểm học tập liên quan cũng sẽ biến mất hoàn toàn.`;
+            } else if (type === 'subject') {
+                const sub = subjects.find(s => s.code === targetId);
+                titleEl.innerText = "Xóa thông tin học phần";
+                descEl.innerText = `Xóa học phần môn học "${sub ? sub.name : targetId}"? Các sinh viên đang đăng ký môn này cũng sẽ bị rút tên học phần liên quan.`;
+            } else if (type === 'registered-course') {
+                const sv = students.find(s => s.id === targetId);
+                const course = sv ? sv.courses.find(c => c.code === subId) : null;
+                titleEl.innerText = "Xóa khóa học đã đăng ký"; // Ref: image_056d86.png
+                descEl.innerText = `Bạn có chắc muốn bỏ khóa học "${course ? course.name : subId}" khỏi sinh viên "${sv ? sv.name : ''}" không?`;
+            }
+
+            openModal('modal-delete-confirm');
+        }
+
+        function executeActionDeletion() {
+            const type = document.getElementById('delete-pointer-type').value;
+            const targetId = document.getElementById('delete-pointer-target-id').value;
+            const subId = document.getElementById('delete-pointer-sub-id').value;
+
+            if (type === 'student') {
+                const idx = students.findIndex(s => s.id === targetId);
+                if (idx !== -1) {
+                    const name = students[idx].name;
+                    students.splice(idx, 1);
+                    renderStudentsTable(students);
+                    showToast(`Đã xóa thành công hồ sơ sinh viên ${name}.`, "warning");
+                }
+            } else if (type === 'subject') {
+                const idx = subjects.findIndex(s => s.code === targetId);
+                if (idx !== -1) {
+                    const name = subjects[idx].name;
+                    subjects.splice(idx, 1);
+                    
+                    // Also delete it from registered list of all students for data integrity
+                    students.forEach(sv => {
+                        sv.courses = sv.courses.filter(c => c.code !== targetId);
+                    });
+
+                    renderSubjectsTable(subjects);
+                    showToast(`Đã xóa học phần môn học "${name}".`, "warning");
+                }
+            } else if (type === 'registered-course') {
+                const svIdx = students.findIndex(s => s.id === targetId);
+                if (svIdx !== -1) {
+                    const courseIdx = students[svIdx].courses.findIndex(c => c.code === subId);
+                    if (courseIdx !== -1) {
+                        const courseName = students[svIdx].courses[courseIdx].name;
+                        students[svIdx].courses.splice(courseIdx, 1);
+                        
+                        // Sync current screen views
+                        renderDetailRegisteredCourses(students[svIdx]);
+                        showToast(`Đã hủy đăng ký môn học "${courseName}" thành công!`);
+                    }
+                }
+            }
+
+            closeModal('modal-delete-confirm');
+        }
+    </script>
+</body>
+</html>

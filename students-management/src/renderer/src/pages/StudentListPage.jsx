@@ -19,6 +19,7 @@ function StudentListPage() {
   const [courses, setCourses] = useState([])
   const [courseMap, setCourseMap] = useState({})
   const [searchName, setSearchName] = useState('')
+  const [searchCode, setSearchCode] = useState('')
   const [selectedCourseId, setSelectedCourseId] = useState('')
   const [page, setPage] = useState(1)
   const [studentToDelete, setStudentToDelete] = useState(null)
@@ -38,11 +39,14 @@ function StudentListPage() {
     setCourseMap(Object.fromEntries(pairs))
   }, [])
 
-  const loadStudents = useCallback(async () => {
+  const loadStudents = useCallback(async (filters = {}) => {
     try {
       setIsLoading(true)
       setError('')
-      const [studentRows, courseRows] = await Promise.all([studentApi.getAll(), courseApi.getAll()])
+      const [studentRows, courseRows] = await Promise.all([
+        studentApi.getAll(filters),
+        courseApi.getAll()
+      ])
       setStudents(studentRows)
       setCourses(courseRows)
       await loadStudentCourses(studentRows)
@@ -54,26 +58,20 @@ function StudentListPage() {
   }, [loadStudentCourses])
 
   useEffect(() => {
-    loadStudents()
-  }, [loadStudents])
+    loadStudents({ searchName, searchCode })
+  }, [loadStudents, searchName, searchCode])
 
   const filteredStudents = useMemo(() => {
-    const nameQuery = normalize(searchName)
     const courseId = Number(selectedCourseId)
 
     return students.filter((student) => {
-      const matchedName =
-        !nameQuery ||
-        normalize(student.full_name).includes(nameQuery) ||
-        normalize(student.student_code).includes(nameQuery)
-
       const enrollments = courseMap[student.id] || []
       const matchedCourse =
         !selectedCourseId || enrollments.some((item) => Number(item.course_id) === courseId)
 
-      return matchedName && matchedCourse
+      return matchedCourse
     })
-  }, [courseMap, searchName, selectedCourseId, students])
+  }, [courseMap, selectedCourseId, students])
 
   const totalPages = Math.max(1, Math.ceil(filteredStudents.length / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
@@ -84,6 +82,11 @@ function StudentListPage() {
 
   function handleSearchNameChange(event) {
     setSearchName(event.target.value)
+    setPage(1)
+  }
+
+  function handleSearchCodeChange(event) {
+    setSearchCode(event.target.value)
     setPage(1)
   }
 
@@ -149,20 +152,31 @@ function StudentListPage() {
         <div>
           <p className="eyebrow">Quản lý sinh viên</p>
           <h1>Danh sách sinh viên</h1>
+          <p className="subtitle">Quan ly ho so, trang thai hoc tap va khoa hoc da dang ky.</p>
         </div>
         <button className="button primary" type="button" onClick={() => setIsCreateModalOpen(true)}>
+          <span aria-hidden="true">+</span>
           Thêm sinh viên
         </button>
       </section>
 
       <section className="toolbar" aria-label="Bộ lọc sinh viên">
         <label>
-          Tên hoặc mã sinh viên
+          Tìm theo họ tên
           <input
             type="search"
-            placeholder="Nhập tên, mã sinh viên..."
+            placeholder="Nhập tên sinh viên..."
             value={searchName}
             onChange={handleSearchNameChange}
+          />
+        </label>
+        <label>
+          Tìm theo mã sinh viên
+          <input
+            type="search"
+            placeholder="Nhập mã sinh viên..."
+            value={searchCode}
+            onChange={handleSearchCodeChange}
           />
         </label>
         <label>
@@ -182,7 +196,10 @@ function StudentListPage() {
 
       <section className="table-panel">
         <div className="table-summary">
-          <strong>{filteredStudents.length}</strong> sinh viên
+          <span>
+            <strong>{filteredStudents.length}</strong> sinh viên
+          </span>
+          <span>Chon Chi tiet de xem day du ho so sinh vien</span>
         </div>
 
         {isLoading ? (

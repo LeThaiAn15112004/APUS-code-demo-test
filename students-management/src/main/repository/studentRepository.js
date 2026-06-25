@@ -7,20 +7,24 @@ export default class StudentRepository {
     let sql = 'SELECT * FROM Student WHERE 1=1'
     const params = []
 
-    if (filters.search) {
-      sql += ' AND (full_name LIKE ? OR student_code LIKE ? OR email LIKE ?)'
-      const searchPattern = `%${filters.search}%`
-      params.push(searchPattern, searchPattern, searchPattern)
+    if (filters.searchName) {
+      const clean = filters.searchName.trim()
+      if (clean) {
+        // Bao trong dấu ngoặc kép để tìm kiếm cụm từ/từ chính xác
+        const safeQuery = `"${clean.replace(/"/g, '""')}"`
+        sql += ` AND id IN (SELECT rowid FROM "Student_name_fts" WHERE "Student_name_fts" MATCH ?)`
+        params.push(safeQuery)
+      }
     }
 
-    if (filters.className) {
-      sql += ' AND class_name = ?'
-      params.push(filters.className)
-    }
-
-    if (filters.status) {
-      sql += ' AND status = ?'
-      params.push(filters.status)
+    if (filters.searchCode) {
+      const clean = filters.searchCode.trim()
+      if (clean) {
+        // Trực tiếp tìm kiếm trigram
+        const safeQuery = `"${clean.replace(/"/g, '""')}"`
+        sql += ` AND id IN (SELECT rowid FROM "Student_code_fts" WHERE "Student_code_fts" MATCH ?)`
+        params.push(safeQuery)
+      }
     }
 
     sql += ' ORDER BY student_code ASC'

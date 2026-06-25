@@ -43,7 +43,74 @@ export default function initSchema(db) {
     FOREIGN KEY ("student_id") REFERENCES "Student" ("id") ON DELETE CASCADE,
     FOREIGN KEY ("course_id") REFERENCES "Course" ("id") ON DELETE CASCADE
   );
+
+  CREATE INDEX IF NOT EXISTS "idx_student_code" ON "Student" ("student_code");
+  CREATE INDEX IF NOT EXISTS "idx_student_name" ON "Student" ("full_name");
+  CREATE INDEX IF NOT EXISTS "idx_student_email" ON "Student" ("email");
+  CREATE INDEX IF NOT EXISTS "idx_student_class_name" ON "Student" ("class_name");
+  CREATE INDEX IF NOT EXISTS "idx_student_major" ON "Student" ("major");
+  CREATE INDEX IF NOT EXISTS "idx_student_status" ON "Student" ("status");
+
+  CREATE INDEX IF NOT EXISTS "idx_course_code" ON "Course" ("course_code");
+  CREATE INDEX IF NOT EXISTS "idx_course_name" ON "Course" ("course_name");
+
+  CREATE INDEX IF NOT EXISTS "idx_enrollment_student_id" ON "Enrollment" ("student_id");
+  CREATE INDEX IF NOT EXISTS "idx_enrollment_course_id" ON "Enrollment" ("course_id");
+  CREATE INDEX IF NOT EXISTS "idx_enrollment_student_course" ON "Enrollment" ("student_id", "course_id");
+
+  -- Bảng ảo FTS5 lưu họ tên (unicode61 mặc định)
+  CREATE VIRTUAL TABLE IF NOT EXISTS "Student_name_fts" USING fts5(
+    "full_name",
+    content="Student",
+    content_rowid="id"
+  );
+
+  -- Bảng ảo FTS5 lưu mã sinh viên (trigram)
+  CREATE VIRTUAL TABLE IF NOT EXISTS "Student_code_fts" USING fts5(
+    "student_code",
+    tokenize="trigram",
+    content="Student",
+    content_rowid="id"
+  );
+
+  -- Triggers đồng bộ cho Student_name_fts
+  CREATE TRIGGER IF NOT EXISTS "student_ai_name" AFTER INSERT ON "Student" BEGIN
+    INSERT INTO "Student_name_fts"("rowid", "full_name") VALUES (new."id", new."full_name");
+  END;
+  CREATE TRIGGER IF NOT EXISTS "student_ad_name" AFTER DELETE ON "Student" BEGIN
+    INSERT INTO "Student_name_fts"("Student_name_fts", "rowid", "full_name") VALUES('delete', old."id", old."full_name");
+  END;
+  CREATE TRIGGER IF NOT EXISTS "student_au_name" AFTER UPDATE OF "full_name" ON "Student" BEGIN
+    INSERT INTO "Student_name_fts"("Student_name_fts", "rowid", "full_name") VALUES('delete', old."id", old."full_name");
+    INSERT INTO "Student_name_fts"("rowid", "full_name") VALUES (new."id", new."full_name");
+  END;
+
+  -- Triggers đồng bộ cho Student_code_fts
+  CREATE TRIGGER IF NOT EXISTS "student_ai_code" AFTER INSERT ON "Student" BEGIN
+    INSERT INTO "Student_code_fts"("rowid", "student_code") VALUES (new."id", new."student_code");
+  END;
+  CREATE TRIGGER IF NOT EXISTS "student_ad_code" AFTER DELETE ON "Student" BEGIN
+    INSERT INTO "Student_code_fts"("Student_code_fts", "rowid", "student_code") VALUES('delete', old."id", old."student_code");
+  END;
+  CREATE TRIGGER IF NOT EXISTS "student_au_code" AFTER UPDATE OF "student_code" ON "Student" BEGIN
+    INSERT INTO "Student_code_fts"("Student_code_fts", "rowid", "student_code") VALUES('delete', old."id", old."student_code");
+    INSERT INTO "Student_code_fts"("rowid", "student_code") VALUES (new."id", new."student_code");
+  END;
 `)
+
+  // Đồng bộ dữ liệu cũ từ bảng Student sang FTS5 nếu bảng FTS5 mới được tạo và chưa có dữ liệu
+  const nameFtsCount = db.prepare('SELECT COUNT(*) as count FROM "Student_name_fts"').get()
+  if (nameFtsCount.count === 0) {
+    db.exec(
+      'INSERT INTO "Student_name_fts"("rowid", "full_name") SELECT "id", "full_name" FROM "Student";'
+    )
+  }
+  const codeFtsCount = db.prepare('SELECT COUNT(*) as count FROM "Student_code_fts"').get()
+  if (codeFtsCount.count === 0) {
+    db.exec(
+      'INSERT INTO "Student_code_fts"("rowid", "student_code") SELECT "id", "student_code" FROM "Student";'
+    )
+  }
 
   // 1. Seed dữ liệu cho bảng Student nếu rỗng
   const studentCount = db.prepare('SELECT COUNT(*) as count FROM Student').get()

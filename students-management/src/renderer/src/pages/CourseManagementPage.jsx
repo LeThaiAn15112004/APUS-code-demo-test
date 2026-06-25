@@ -91,6 +91,7 @@ function CourseManagementPage() {
         <div>
           <p className="eyebrow">Quản lý môn học</p>
           <h1>Danh sách môn học</h1>
+          <p className="subtitle">Tao va theo doi danh muc khoa hoc dung cho dang ky sinh vien.</p>
         </div>
       </section>
 
@@ -126,7 +127,7 @@ function CourseManagementPage() {
             />
           </label>
           <button className="button primary" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Đang lưu...' : 'Thêm môn học'}
+            {isSubmitting ? 'Đang lưu...' : '+ Thêm môn học'}
           </button>
         </form>
         {formError && <div className="alert compact">{formError}</div>}
@@ -136,7 +137,10 @@ function CourseManagementPage() {
 
       <section className="table-panel">
         <div className="table-summary">
-          <strong>{courses.length}</strong> môn học
+          <span>
+            <strong>{courses.length}</strong> môn học
+          </span>
+          <span>Danh muc khoa hoc dang san sang cho dang ky</span>
         </div>
         {isLoading ? (
           <div className="empty-state">Đang tải dữ liệu...</div>

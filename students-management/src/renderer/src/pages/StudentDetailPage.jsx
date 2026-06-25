@@ -96,10 +96,13 @@ function StudentDetailPage() {
         <div>
           <p className="eyebrow">Chi tiết sinh viên</p>
           <h1>{student.full_name}</h1>
-          <p className="subtitle">{student.student_code}</p>
+          <p className="subtitle">
+            {student.student_code} · {student.status || 'Chua cap nhat'}
+          </p>
         </div>
         <div className="page-actions">
           <button className="button primary" type="button" onClick={() => setIsEditModalOpen(true)}>
+            <span aria-hidden="true">+</span>
             Sửa sinh viên
           </button>
           <Link className="button ghost" to="/">
@@ -121,7 +124,10 @@ function StudentDetailPage() {
 
       <section className="table-panel">
         <div className="table-summary">
-          <strong>{enrollments.length}</strong> môn học đã đăng ký
+          <span>
+            <strong>{enrollments.length}</strong> môn học đã đăng ký
+          </span>
+          <span>Theo doi hoc ky, tin chi va diem so hien tai</span>
         </div>
         <div className="table-wrap">
           <table>

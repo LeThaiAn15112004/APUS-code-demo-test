@@ -16,8 +16,8 @@
 - `[X]` Bước 4: Transaction & Quản lý môn học (Courses & Enrollments)
   - `[X]` Thêm môn học mới
   - `[X]` Đăng ký môn học cho sinh viên (Sử dụng Transaction khi đăng ký hàng loạt hoặc xóa dữ liệu liên kết)
-- `[ ]` Bước 5: Index & Tối ưu hóa truy vấn
-  - `[ ]` Tạo index trên các cột tìm kiếm thường xuyên
-  - `[ ]` Kiểm tra query plan bằng `EXPLAIN QUERY PLAN`
+- `[X]` Bước 5: Index & Tối ưu hóa truy vấn
+  - `[X]` Tạo index trên các cột tìm kiếm thường xuyên
+  - `[X]` Kiểm tra query plan bằng `EXPLAIN QUERY PLAN`
 - `[ ]` Bước 6: Tích hợp FTS5
   - `[ ]` Tạo virtual table FTS5 cho students để tìm kiếm nhanh
