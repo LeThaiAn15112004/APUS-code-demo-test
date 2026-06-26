@@ -28,20 +28,64 @@ export default function initSchema(db) {
     "course_code" TEXT UNIQUE NOT NULL,
     "course_name" TEXT NOT NULL,
     "credits" INTEGER NOT NULL,
+    "status" TEXT DEFAULT 'Đang đào tạo',
     "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS "CourseSection" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "course_id" INTEGER NOT NULL,
+    "semester" TEXT NOT NULL,
+    "section_code" TEXT NOT NULL DEFAULT 'DEFAULT',
+    "status" TEXT DEFAULT 'Đang mở',
+    "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY ("course_id") REFERENCES "Course" ("id"),
+    UNIQUE ("course_id", "semester", "section_code")
+  );
+
+  CREATE TABLE IF NOT EXISTS "CoursePrerequisite" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "course_id" INTEGER NOT NULL,
+    "prerequisite_course_id" INTEGER NOT NULL,
+    "minimum_score" REAL DEFAULT 5.0,
+    "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY ("course_id") REFERENCES "Course" ("id"),
+    FOREIGN KEY ("prerequisite_course_id") REFERENCES "Course" ("id"),
+    UNIQUE ("course_id", "prerequisite_course_id")
   );
 
   CREATE TABLE IF NOT EXISTS "Enrollment" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
     "student_id" INTEGER NOT NULL,
     "course_id" INTEGER NOT NULL,
+    "course_section_id" INTEGER,
     "score" REAL,
+    "attendance_score" REAL,
+    "midterm_score" REAL,
+    "final_score" REAL,
+    "total_score" REAL,
+    "grade_status" TEXT DEFAULT 'draft',
     "semester" TEXT NOT NULL,
     "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY ("student_id") REFERENCES "Student" ("id") ON DELETE CASCADE,
-    FOREIGN KEY ("course_id") REFERENCES "Course" ("id") ON DELETE CASCADE
+    FOREIGN KEY ("course_id") REFERENCES "Course" ("id") ON DELETE CASCADE,
+    FOREIGN KEY ("course_section_id") REFERENCES "CourseSection" ("id")
+  );
+
+  CREATE TABLE IF NOT EXISTS "GradeAuditLog" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "enrollment_id" INTEGER NOT NULL,
+    "old_score" REAL,
+    "new_score" REAL,
+    "old_grade_status" TEXT,
+    "new_grade_status" TEXT,
+    "changed_by" TEXT DEFAULT 'system',
+    "reason" TEXT,
+    "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY ("enrollment_id") REFERENCES "Enrollment" ("id")
   );
 
   CREATE INDEX IF NOT EXISTS "idx_student_code" ON "Student" ("student_code");
@@ -54,9 +98,18 @@ export default function initSchema(db) {
   CREATE INDEX IF NOT EXISTS "idx_course_code" ON "Course" ("course_code");
   CREATE INDEX IF NOT EXISTS "idx_course_name" ON "Course" ("course_name");
 
+  CREATE INDEX IF NOT EXISTS "idx_course_section_course_id" ON "CourseSection" ("course_id");
+  CREATE INDEX IF NOT EXISTS "idx_course_section_semester" ON "CourseSection" ("semester");
+  CREATE INDEX IF NOT EXISTS "idx_course_section_course_semester" ON "CourseSection" ("course_id", "semester");
+
+  CREATE INDEX IF NOT EXISTS "idx_course_prerequisite_course_id" ON "CoursePrerequisite" ("course_id");
+  CREATE INDEX IF NOT EXISTS "idx_course_prerequisite_required_id" ON "CoursePrerequisite" ("prerequisite_course_id");
+
   CREATE INDEX IF NOT EXISTS "idx_enrollment_student_id" ON "Enrollment" ("student_id");
   CREATE INDEX IF NOT EXISTS "idx_enrollment_course_id" ON "Enrollment" ("course_id");
   CREATE INDEX IF NOT EXISTS "idx_enrollment_student_course" ON "Enrollment" ("student_id", "course_id");
+
+  CREATE INDEX IF NOT EXISTS "idx_grade_audit_enrollment_id" ON "GradeAuditLog" ("enrollment_id");
 
   -- Bảng ảo FTS5 lưu họ tên (unicode61 mặc định)
   CREATE VIRTUAL TABLE IF NOT EXISTS "Student_name_fts" USING fts5(
@@ -97,6 +150,42 @@ export default function initSchema(db) {
     INSERT INTO "Student_code_fts"("rowid", "student_code") VALUES (new."id", new."student_code");
   END;
 `)
+
+  const courseColumns = db.prepare('PRAGMA table_info("Course")').all()
+  const hasCourseStatus = courseColumns.some((column) => column.name === 'status')
+  if (!hasCourseStatus) {
+    db.exec(`ALTER TABLE "Course" ADD COLUMN "status" TEXT DEFAULT 'Đang đào tạo';`)
+  }
+
+  db.exec(`
+    UPDATE "Student"
+    SET "status" = 'Đã rút hồ sơ'
+    WHERE "status" = 'Thôi học';
+
+    UPDATE "Student"
+    SET "status" = 'Đang học'
+    WHERE "status" IS NULL OR "status" = '';
+  `)
+
+  const enrollmentColumns = db.prepare('PRAGMA table_info("Enrollment")').all()
+  const addEnrollmentColumn = (columnName, definition) => {
+    const hasColumn = enrollmentColumns.some((column) => column.name === columnName)
+    if (!hasColumn) {
+      db.exec(`ALTER TABLE "Enrollment" ADD COLUMN ${definition};`)
+    }
+  }
+
+  addEnrollmentColumn('course_section_id', '"course_section_id" INTEGER')
+  addEnrollmentColumn('attendance_score', '"attendance_score" REAL')
+  addEnrollmentColumn('midterm_score', '"midterm_score" REAL')
+  addEnrollmentColumn('final_score', '"final_score" REAL')
+  addEnrollmentColumn('total_score', '"total_score" REAL')
+  addEnrollmentColumn('grade_status', `"grade_status" TEXT DEFAULT 'draft'`)
+
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS "idx_course_status" ON "Course" ("status");
+    CREATE INDEX IF NOT EXISTS "idx_enrollment_course_section_id" ON "Enrollment" ("course_section_id");
+  `)
 
   // Đồng bộ dữ liệu cũ từ bảng Student sang FTS5 nếu bảng FTS5 mới được tạo và chưa có dữ liệu
   const nameFtsCount = db.prepare('SELECT COUNT(*) as count FROM "Student_name_fts"').get()
@@ -158,13 +247,13 @@ export default function initSchema(db) {
     ]
 
     const insertCourse = db.prepare(`
-      INSERT INTO Course (course_code, course_name, credits)
-      VALUES (?, ?, ?)
+      INSERT INTO Course (course_code, course_name, credits, status)
+      VALUES (?, ?, ?, ?)
     `)
 
     const insertManyCourses = db.transaction((courses) => {
       for (const course of courses) {
-        insertCourse.run(course.code, course.name, course.credits)
+        insertCourse.run(course.code, course.name, course.credits, 'Đang đào tạo')
       }
     })
 
@@ -206,4 +295,22 @@ export default function initSchema(db) {
     const totalSeeded = insertManyEnrollments()
     console.log(`Seeded ${totalSeeded} enrollment records successfully.`)
   }
+
+  db.exec(`
+    INSERT OR IGNORE INTO "CourseSection" ("course_id", "semester", "section_code", "status")
+    SELECT DISTINCT "course_id", "semester", 'DEFAULT', 'Đang mở'
+    FROM "Enrollment";
+
+    UPDATE "Enrollment"
+    SET
+      "course_section_id" = (
+        SELECT "CourseSection"."id"
+        FROM "CourseSection"
+        WHERE "CourseSection"."course_id" = "Enrollment"."course_id"
+          AND "CourseSection"."semester" = "Enrollment"."semester"
+          AND "CourseSection"."section_code" = 'DEFAULT'
+      ),
+      "total_score" = COALESCE("total_score", "score")
+    WHERE "course_section_id" IS NULL;
+  `)
 }

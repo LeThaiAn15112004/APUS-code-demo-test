@@ -19,5 +19,5 @@
 - `[X]` Bước 5: Index & Tối ưu hóa truy vấn
   - `[X]` Tạo index trên các cột tìm kiếm thường xuyên
   - `[X]` Kiểm tra query plan bằng `EXPLAIN QUERY PLAN`
-- `[ ]` Bước 6: Tích hợp FTS5
-  - `[ ]` Tạo virtual table FTS5 cho students để tìm kiếm nhanh
+- `[X]` Bước 6: Tích hợp FTS5
+  - `[X]` Tạo virtual table FTS5 cho students để tìm kiếm nhanh

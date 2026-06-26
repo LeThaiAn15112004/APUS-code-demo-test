@@ -7,12 +7,14 @@ import StudentFormModal from '../components/StudentFormModal'
 import { courseApi, enrollmentApi, studentApi } from '../index'
 
 const PAGE_SIZE = 10
-
-function normalize(value) {
-  return String(value || '')
-    .toLowerCase()
-    .trim()
-}
+const STUDENT_STATUSES = [
+  'Đang học',
+  'Bảo lưu',
+  'Chờ tốt nghiệp',
+  'Tốt nghiệp',
+  'Buộc thôi học',
+  'Đã rút hồ sơ'
+]
 
 function StudentListPage() {
   const [students, setStudents] = useState([])
@@ -20,6 +22,7 @@ function StudentListPage() {
   const [courseMap, setCourseMap] = useState({})
   const [searchName, setSearchName] = useState('')
   const [searchCode, setSearchCode] = useState('')
+  const [selectedStatus, setSelectedStatus] = useState('')
   const [selectedCourseId, setSelectedCourseId] = useState('')
   const [page, setPage] = useState(1)
   const [studentToDelete, setStudentToDelete] = useState(null)
@@ -58,8 +61,13 @@ function StudentListPage() {
   }, [loadStudentCourses])
 
   useEffect(() => {
-    loadStudents({ searchName, searchCode })
-  }, [loadStudents, searchName, searchCode])
+    loadStudents({
+      searchName,
+      searchCode,
+      status: selectedStatus,
+      includeInactive: Boolean(selectedStatus)
+    })
+  }, [loadStudents, searchName, searchCode, selectedStatus])
 
   const filteredStudents = useMemo(() => {
     const courseId = Number(selectedCourseId)
@@ -95,17 +103,32 @@ function StudentListPage() {
     setPage(1)
   }
 
+  function handleStatusChange(event) {
+    setSelectedStatus(event.target.value)
+    setPage(1)
+  }
+
   async function handleCreateStudent(student) {
     await studentApi.create(student)
     setPage(1)
-    await loadStudents()
+    await loadStudents({
+      searchName,
+      searchCode,
+      status: selectedStatus,
+      includeInactive: Boolean(selectedStatus)
+    })
   }
 
   async function handleUpdateStudent(student) {
     if (!studentToEdit) return
 
     await studentApi.update(studentToEdit.id, student)
-    await loadStudents()
+    await loadStudents({
+      searchName,
+      searchCode,
+      status: selectedStatus,
+      includeInactive: Boolean(selectedStatus)
+    })
   }
 
   async function handleSyncCourses(selectedCourseIds, semester) {
@@ -131,7 +154,12 @@ function StudentListPage() {
       await Promise.all(removedEnrollments.map((item) => enrollmentApi.delete(item.id)))
     }
 
-    await loadStudents()
+    await loadStudents({
+      searchName,
+      searchCode,
+      status: selectedStatus,
+      includeInactive: Boolean(selectedStatus)
+    })
   }
 
   async function handleDelete() {
@@ -140,7 +168,12 @@ function StudentListPage() {
     try {
       await studentApi.delete(studentToDelete.id)
       setStudentToDelete(null)
-      await loadStudents()
+      await loadStudents({
+        searchName,
+        searchCode,
+        status: selectedStatus,
+        includeInactive: Boolean(selectedStatus)
+      })
     } catch (err) {
       setError(err.message || 'Không thể xóa sinh viên.')
     }
@@ -186,6 +219,17 @@ function StudentListPage() {
             {courses.map((course) => (
               <option key={course.id} value={course.id}>
                 {course.course_code} - {course.course_name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Trạng thái
+          <select value={selectedStatus} onChange={handleStatusChange}>
+            <option value="">Đang hoạt động</option>
+            {STUDENT_STATUSES.map((status) => (
+              <option key={status} value={status}>
+                {status}
               </option>
             ))}
           </select>
@@ -302,8 +346,8 @@ function StudentListPage() {
 
       <ConfirmModal
         isOpen={Boolean(studentToDelete)}
-        title="Xóa sinh viên?"
-        description={`Bạn có chắc muốn xóa ${studentToDelete?.full_name || 'sinh viên này'} không?`}
+        title="Chuyển trạng thái sinh viên?"
+        description={`Sinh viên ${studentToDelete?.full_name || 'này'} sẽ được chuyển sang trạng thái "Đã rút hồ sơ". Lịch sử đăng ký và điểm số vẫn được giữ lại.`}
         onCancel={() => setStudentToDelete(null)}
         onConfirm={handleDelete}
       />

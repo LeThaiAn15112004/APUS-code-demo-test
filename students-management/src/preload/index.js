@@ -12,7 +12,7 @@ const api = {
     delete: (id) => ipcRenderer.invoke('student:delete', id)
   },
   course: {
-    getAll: () => ipcRenderer.invoke('course:getAll'),
+    getAll: (filters) => ipcRenderer.invoke('course:getAll', filters),
     getById: (id) => ipcRenderer.invoke('course:getById', id),
     getByCode: (code) => ipcRenderer.invoke('course:getByCode', code),
     create: (course) => ipcRenderer.invoke('course:create', course),
@@ -26,6 +26,9 @@ const api = {
     delete: (id) => ipcRenderer.invoke('enrollment:delete', id),
     registerCourses: (studentId, courseIds, semester) =>
       ipcRenderer.invoke('enrollment:registerCourses', studentId, courseIds, semester)
+  },
+  report: {
+    getOverview: () => ipcRenderer.invoke('report:getOverview')
   }
 }
 
@@ -43,4 +46,3 @@ if (process.contextIsolated) {
   window.electron = electronAPI
   window.api = api
 }
-

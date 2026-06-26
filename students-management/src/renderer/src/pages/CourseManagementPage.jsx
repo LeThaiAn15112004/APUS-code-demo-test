@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import { useCallback, useEffect, useState } from 'react'
+import ConfirmModal from '../components/ConfirmModal'
 import { courseApi } from '../index'
 
 const emptyCourse = {
@@ -26,12 +27,13 @@ function CourseManagementPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [formError, setFormError] = useState('')
+  const [courseToDeactivate, setCourseToDeactivate] = useState(null)
 
   const loadCourses = useCallback(async () => {
     try {
       setIsLoading(true)
       setError('')
-      const rows = await courseApi.getAll()
+      const rows = await courseApi.getAll({ includeInactive: true })
       setCourses(rows)
     } catch (err) {
       setError(err.message || 'Không thể tải danh sách môn học.')
@@ -82,6 +84,18 @@ function CourseManagementPage() {
       setFormError(getFriendlyCourseError(err))
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  async function handleDeactivateCourse() {
+    if (!courseToDeactivate) return
+
+    try {
+      await courseApi.delete(courseToDeactivate.id)
+      setCourseToDeactivate(null)
+      await loadCourses()
+    } catch (err) {
+      setError(err.message || 'Không thể ngừng đào tạo môn học.')
     }
   }
 
@@ -140,7 +154,7 @@ function CourseManagementPage() {
           <span>
             <strong>{courses.length}</strong> môn học
           </span>
-          <span>Danh muc khoa hoc dang san sang cho dang ky</span>
+          <span>Danh muc khoa hoc va trang thai dao tao</span>
         </div>
         {isLoading ? (
           <div className="empty-state">Đang tải dữ liệu...</div>
@@ -152,7 +166,9 @@ function CourseManagementPage() {
                   <th>Mã môn</th>
                   <th>Tên môn học</th>
                   <th>Số tín chỉ</th>
+                  <th>Trạng thái</th>
                   <th>Ngày tạo</th>
+                  <th>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -161,7 +177,20 @@ function CourseManagementPage() {
                     <td>{course.course_code}</td>
                     <td>{course.course_name}</td>
                     <td>{course.credits}</td>
+                    <td>
+                      <span className="status-pill">{course.status || 'Đang đào tạo'}</span>
+                    </td>
                     <td>{course.created_at || '-'}</td>
+                    <td>
+                      <button
+                        className="button small danger-outline"
+                        type="button"
+                        disabled={course.status === 'Ngừng đào tạo'}
+                        onClick={() => setCourseToDeactivate(course)}
+                      >
+                        Ngừng đào tạo
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -170,6 +199,14 @@ function CourseManagementPage() {
           </div>
         )}
       </section>
+
+      <ConfirmModal
+        isOpen={Boolean(courseToDeactivate)}
+        title="Ngừng đào tạo môn học?"
+        description={`Môn ${courseToDeactivate?.course_name || 'này'} sẽ không còn xuất hiện trong danh sách đăng ký mới. Dữ liệu đăng ký và điểm số cũ vẫn được giữ lại.`}
+        onCancel={() => setCourseToDeactivate(null)}
+        onConfirm={handleDeactivateCourse}
+      />
     </main>
   )
 }

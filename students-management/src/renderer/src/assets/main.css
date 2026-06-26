@@ -34,12 +34,19 @@ body {
   background: var(--bg);
   color: var(--text);
   user-select: none;
+  /* Fix: Đảm bảo pointer events luôn hoạt động đúng trên body */
+  pointer-events: auto;
 }
 
 button,
 input,
 select {
   font: inherit;
+  /* Fix: Đảm bảo các phần tử tương tác luôn nhận được sự kiện chuột/bàn phím
+   * ngay cả sau khi window bị unfocused rồi focused lại */
+  pointer-events: auto;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 a {

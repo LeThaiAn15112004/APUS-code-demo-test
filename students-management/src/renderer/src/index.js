@@ -17,7 +17,7 @@ export const studentApi = {
 }
 
 export const courseApi = {
-  getAll: () => getApi().course.getAll(),
+  getAll: (filters = {}) => getApi().course.getAll(filters),
   create: (course) => getApi().course.create(course),
   update: (id, course) => getApi().course.update(id, course),
   delete: (id) => getApi().course.delete(id)
@@ -28,4 +28,8 @@ export const enrollmentApi = {
   delete: (id) => getApi().enrollment.delete(id),
   registerCourses: (studentId, courseIds, semester) =>
     getApi().enrollment.registerCourses(studentId, courseIds, semester)
+}
+
+export const reportApi = {
+  getOverview: () => getApi().report.getOverview()
 }

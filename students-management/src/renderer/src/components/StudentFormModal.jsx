@@ -252,8 +252,10 @@ function StudentFormModal({
             <select name="status" value={form.status} onChange={handleChange}>
               <option value="Đang học">Đang học</option>
               <option value="Bảo lưu">Bảo lưu</option>
+              <option value="Chờ tốt nghiệp">Chờ tốt nghiệp</option>
               <option value="Tốt nghiệp">Tốt nghiệp</option>
-              <option value="Thôi học">Thôi học</option>
+              <option value="Buộc thôi học">Buộc thôi học</option>
+              <option value="Đã rút hồ sơ">Đã rút hồ sơ</option>
             </select>
           </label>
           <label className="form-field-wide">

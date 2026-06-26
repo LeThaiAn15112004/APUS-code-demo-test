@@ -30,6 +30,14 @@ function createWindow() {
     mainWindow.show()
   })
 
+  // Fix: Khi window regains focus, ép webContents focus lại để
+  // khắc phục lỗi Electron/Chromium không cho tương tác input sau unfocus.
+  mainWindow.on('focus', () => {
+    if (!mainWindow.isDestroyed()) {
+      mainWindow.webContents.focus()
+    }
+  })
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
