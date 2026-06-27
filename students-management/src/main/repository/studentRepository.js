@@ -22,6 +22,13 @@ export default class StudentRepository {
     this.db = db
   }
 
+  rebuildSearchIndex() {
+    this.db.exec(`
+      INSERT INTO "Student_name_fts"("Student_name_fts") VALUES('rebuild');
+      INSERT INTO "Student_code_fts"("Student_code_fts") VALUES('rebuild');
+    `)
+  }
+
   getAll(filters = {}) {
     let sql = 'SELECT * FROM Student WHERE 1=1'
     const params = []
@@ -95,38 +102,54 @@ export default class StudentRepository {
       student.class_name,
       normalizeStudentStatus(student.status)
     )
+    this.rebuildSearchIndex()
     return result.lastInsertRowid
   }
 
   update(id, student) {
+    const current = this.getById(id)
+    if (!current) return false
+
+    const nextStudent = {
+      student_code: student.student_code,
+      full_name: student.full_name,
+      email: student.email,
+      phone: student.phone,
+      date_of_birth: student.date_of_birth,
+      gender: student.gender,
+      address: student.address,
+      major: student.major,
+      class_name: student.class_name,
+      status: normalizeStudentStatus(student.status)
+    }
+
+    const setClauses = []
+    const params = []
+
+    for (const [column, value] of Object.entries(nextStudent)) {
+      const currentValue = current[column] ?? ''
+      const nextValue = value ?? ''
+
+      if (currentValue !== nextValue) {
+        setClauses.push(`${column} = ?`)
+        params.push(value)
+      }
+    }
+
+    if (setClauses.length === 0) return true
+
+    setClauses.push('updated_at = CURRENT_TIMESTAMP')
+    params.push(id)
+
     const stmt = this.db.prepare(`
       UPDATE Student
-      SET student_code = ?,
-       full_name = ?,
-        email = ?,
-         phone = ?,
-          date_of_birth = ?,
-           gender = ?,
-            address = ?,
-             major = ?,
-              class_name = ?,
-               status = ?,
-                updated_at = CURRENT_TIMESTAMP
+      SET ${setClauses.join(', ')}
       WHERE id = ?
     `)
-    const result = stmt.run(
-      student.student_code,
-      student.full_name,
-      student.email,
-      student.phone,
-      student.date_of_birth,
-      student.gender,
-      student.address,
-      student.major,
-      student.class_name,
-      normalizeStudentStatus(student.status),
-      id
-    )
+    const result = stmt.run(...params)
+    if (result.changes > 0) {
+      this.rebuildSearchIndex()
+    }
     return result.changes > 0
   }
 
@@ -140,6 +163,9 @@ export default class StudentRepository {
       `
       )
       .run(DEFAULT_SOFT_DELETE_STATUS, id)
+    if (result.changes > 0) {
+      this.rebuildSearchIndex()
+    }
     return result.changes > 0
   }
 }

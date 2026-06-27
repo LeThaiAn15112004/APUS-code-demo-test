@@ -127,28 +127,19 @@ export default function initSchema(db) {
   );
 
   -- Triggers đồng bộ cho Student_name_fts
-  CREATE TRIGGER IF NOT EXISTS "student_ai_name" AFTER INSERT ON "Student" BEGIN
-    INSERT INTO "Student_name_fts"("rowid", "full_name") VALUES (new."id", new."full_name");
-  END;
-  CREATE TRIGGER IF NOT EXISTS "student_ad_name" AFTER DELETE ON "Student" BEGIN
-    INSERT INTO "Student_name_fts"("Student_name_fts", "rowid", "full_name") VALUES('delete', old."id", old."full_name");
-  END;
-  CREATE TRIGGER IF NOT EXISTS "student_au_name" AFTER UPDATE OF "full_name" ON "Student" BEGIN
-    INSERT INTO "Student_name_fts"("Student_name_fts", "rowid", "full_name") VALUES('delete', old."id", old."full_name");
-    INSERT INTO "Student_name_fts"("rowid", "full_name") VALUES (new."id", new."full_name");
-  END;
+  DROP TRIGGER IF EXISTS "student_fts_ai";
+  DROP TRIGGER IF EXISTS "student_fts_ad";
+  DROP TRIGGER IF EXISTS "student_fts_au";
+  DROP TRIGGER IF EXISTS "student_ai_name";
+  DROP TRIGGER IF EXISTS "student_ad_name";
+  DROP TRIGGER IF EXISTS "student_au_name";
+  DROP TRIGGER IF EXISTS "student_ai_code";
+  DROP TRIGGER IF EXISTS "student_ad_code";
+  DROP TRIGGER IF EXISTS "student_au_code";
+
+  -- FTS indexes are rebuilt after student writes instead of being maintained by triggers.
 
   -- Triggers đồng bộ cho Student_code_fts
-  CREATE TRIGGER IF NOT EXISTS "student_ai_code" AFTER INSERT ON "Student" BEGIN
-    INSERT INTO "Student_code_fts"("rowid", "student_code") VALUES (new."id", new."student_code");
-  END;
-  CREATE TRIGGER IF NOT EXISTS "student_ad_code" AFTER DELETE ON "Student" BEGIN
-    INSERT INTO "Student_code_fts"("Student_code_fts", "rowid", "student_code") VALUES('delete', old."id", old."student_code");
-  END;
-  CREATE TRIGGER IF NOT EXISTS "student_au_code" AFTER UPDATE OF "student_code" ON "Student" BEGIN
-    INSERT INTO "Student_code_fts"("Student_code_fts", "rowid", "student_code") VALUES('delete', old."id", old."student_code");
-    INSERT INTO "Student_code_fts"("rowid", "student_code") VALUES (new."id", new."student_code");
-  END;
 `)
 
   const courseColumns = db.prepare('PRAGMA table_info("Course")').all()
@@ -188,19 +179,6 @@ export default function initSchema(db) {
   `)
 
   // Đồng bộ dữ liệu cũ từ bảng Student sang FTS5 nếu bảng FTS5 mới được tạo và chưa có dữ liệu
-  const nameFtsCount = db.prepare('SELECT COUNT(*) as count FROM "Student_name_fts"').get()
-  if (nameFtsCount.count === 0) {
-    db.exec(
-      'INSERT INTO "Student_name_fts"("rowid", "full_name") SELECT "id", "full_name" FROM "Student";'
-    )
-  }
-  const codeFtsCount = db.prepare('SELECT COUNT(*) as count FROM "Student_code_fts"').get()
-  if (codeFtsCount.count === 0) {
-    db.exec(
-      'INSERT INTO "Student_code_fts"("rowid", "student_code") SELECT "id", "student_code" FROM "Student";'
-    )
-  }
-
   // 1. Seed dữ liệu cho bảng Student nếu rỗng
   const studentCount = db.prepare('SELECT COUNT(*) as count FROM Student').get()
   if (studentCount.count === 0) {
@@ -312,5 +290,10 @@ export default function initSchema(db) {
       ),
       "total_score" = COALESCE("total_score", "score")
     WHERE "course_section_id" IS NULL;
+  `)
+
+  db.exec(`
+    INSERT INTO "Student_name_fts"("Student_name_fts") VALUES('rebuild');
+    INSERT INTO "Student_code_fts"("Student_code_fts") VALUES('rebuild');
   `)
 }

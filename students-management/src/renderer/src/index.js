@@ -25,6 +25,7 @@ export const courseApi = {
 
 export const enrollmentApi = {
   getByStudentId: (studentId) => getApi().enrollment.getByStudentId(studentId),
+  updateScore: (id, score) => getApi().enrollment.updateScore(id, score),
   delete: (id) => getApi().enrollment.delete(id),
   registerCourses: (studentId, courseIds, semester) =>
     getApi().enrollment.registerCourses(studentId, courseIds, semester)

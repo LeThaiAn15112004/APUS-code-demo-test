@@ -1,0 +1,21 @@
+tên với mã là 1 ko nên tách 2 mục và chỉ 1 dòng, bên trái
+thêm icon filter, dropdown xuống, theo gì lọc nấy
+thanh input quá dài, thừa ko cần thiết
+vì mục đích chính là nhìn sv chứ chả ai nhìn filter các kiểu, header
+tên page để làm text header
+
+địa chỉ thì nên là: 1 là chọn thẳng địa chỉ gg map, 2 là chọn kiểu dropdown các đơn vị hành chính, vì ko phải ai cũng nhỡ chính xác địa chỉ của mình
+
+tách nhỏ bảng vì có thể còn bảng class, môn học, điểm thành phần...
+
+xóa thẳng
+
+đặt tên màn: viết hoa chữ cái đầu
+
+với logic, viết hoa chữ cái thứ 2 trở đi
+
+tách logic thành các hook custom
+
+tách ra các mục nhỏ trong page vì scale có thể lớn
+
+folder utils nữa, sẽ có function dùng chung, để vào đó

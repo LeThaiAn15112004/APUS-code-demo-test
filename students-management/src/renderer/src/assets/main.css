@@ -558,6 +558,12 @@ td:first-child {
   white-space: nowrap;
 }
 
+.score-input {
+  width: 88px;
+  min-width: 88px;
+  padding: 7px 9px;
+}
+
 .row-actions,
 .modal-actions,
 .pagination {

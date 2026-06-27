@@ -1,8 +1,8 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import AppLayout from './components/AppLayout'
-import CourseManagementPage from './pages/CourseManagementPage'
-import StudentDetailPage from './pages/StudentDetailPage'
-import StudentListPage from './pages/StudentListPage'
+import CourseManagementPage from './pages/coursemanagement/CourseManagementPage'
+import StudentDetailPage from './pages/studentdetail/StudentDetailPage'
+import StudentListPage from './pages/studentlist/StudentListPage'
 
 function App() {
   return (

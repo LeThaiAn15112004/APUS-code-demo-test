@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import ConfirmModal from '../components/ConfirmModal'
-import StudentFormModal from '../components/StudentFormModal'
-import { courseApi, enrollmentApi, studentApi } from '../index'
+import ConfirmModal from '../../components/ConfirmModal'
+import StudentFormModal from '../../components/StudentFormModal'
+import { courseApi, enrollmentApi, studentApi } from '../../index'
 
 const PAGE_SIZE = 10
 const STUDENT_STATUSES = [
@@ -131,20 +131,16 @@ function StudentListPage() {
     })
   }
 
-  async function handleSyncCourses(selectedCourseIds, semester) {
+  async function handleSyncCourses(selectedCourseIds, semester, removedEnrollmentIds = []) {
     if (!studentToEdit) return
 
     const currentEnrollments = courseMap[studentToEdit.id] || []
-    const currentCourseIds = currentEnrollments.map((item) => Number(item.course_id))
-    const addedCourseIds = selectedCourseIds.filter(
-      (courseId) => !currentCourseIds.includes(courseId)
-    )
     const removedEnrollments = currentEnrollments.filter(
-      (item) => !selectedCourseIds.includes(Number(item.course_id))
+      (item) => removedEnrollmentIds.includes(Number(item.id))
     )
 
-    if (addedCourseIds.length > 0) {
-      const result = await enrollmentApi.registerCourses(studentToEdit.id, addedCourseIds, semester)
+    if (selectedCourseIds.length > 0) {
+      const result = await enrollmentApi.registerCourses(studentToEdit.id, selectedCourseIds, semester)
       if (result && result.success === false) {
         throw new Error(result.message)
       }

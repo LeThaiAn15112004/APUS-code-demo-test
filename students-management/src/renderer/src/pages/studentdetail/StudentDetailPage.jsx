@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import ConfirmModal from '../components/ConfirmModal'
-import StudentFormModal from '../components/StudentFormModal'
-import { courseApi, enrollmentApi, studentApi } from '../index'
+import ConfirmModal from '../../components/ConfirmModal'
+import StudentFormModal from '../../components/StudentFormModal'
+import { courseApi, enrollmentApi, studentApi } from '../../index'
 
 function StudentDetailPage() {
   const { id } = useParams()
@@ -13,6 +13,8 @@ function StudentDetailPage() {
   const [enrollments, setEnrollments] = useState([])
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [enrollmentToDelete, setEnrollmentToDelete] = useState(null)
+  const [scoreEditingId, setScoreEditingId] = useState(null)
+  const [scoreValue, setScoreValue] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -44,17 +46,13 @@ function StudentDetailPage() {
     await loadDetail()
   }
 
-  async function handleSyncCourses(selectedCourseIds, semester) {
-    const currentCourseIds = enrollments.map((item) => Number(item.course_id))
-    const addedCourseIds = selectedCourseIds.filter(
-      (courseId) => !currentCourseIds.includes(courseId)
-    )
-    const removedEnrollments = enrollments.filter(
-      (item) => !selectedCourseIds.includes(Number(item.course_id))
+  async function handleSyncCourses(selectedCourseIds, semester, removedEnrollmentIds = []) {
+    const removedEnrollments = enrollments.filter((item) =>
+      removedEnrollmentIds.includes(Number(item.id))
     )
 
-    if (addedCourseIds.length > 0) {
-      const result = await enrollmentApi.registerCourses(Number(id), addedCourseIds, semester)
+    if (selectedCourseIds.length > 0) {
+      const result = await enrollmentApi.registerCourses(Number(id), selectedCourseIds, semester)
       if (result && result.success === false) {
         throw new Error(result.message)
       }
@@ -72,6 +70,31 @@ function StudentDetailPage() {
 
     await enrollmentApi.delete(enrollmentToDelete.id)
     setEnrollmentToDelete(null)
+    await loadDetail()
+  }
+
+  function handleStartEditScore(enrollment) {
+    setError('')
+    setScoreEditingId(enrollment.id)
+    setScoreValue(enrollment.score ?? '')
+  }
+
+  function handleCancelEditScore() {
+    setScoreEditingId(null)
+    setScoreValue('')
+  }
+
+  async function handleSaveScore(enrollmentId) {
+    const score = Number(scoreValue)
+
+    if (!Number.isFinite(score) || score < 0 || score > 10) {
+      setError('Điểm phải là số từ 0 đến 10.')
+      return
+    }
+
+    await enrollmentApi.updateScore(enrollmentId, score)
+    setScoreEditingId(null)
+    setScoreValue('')
     await loadDetail()
   }
 
@@ -148,15 +171,57 @@ function StudentDetailPage() {
                   <td>{item.course_name}</td>
                   <td>{item.credits}</td>
                   <td>{item.semester}</td>
-                  <td>{item.score ?? '-'}</td>
                   <td>
-                    <button
-                      className="button small danger-outline"
-                      type="button"
-                      onClick={() => setEnrollmentToDelete(item)}
-                    >
-                      Xóa
-                    </button>
+                    {scoreEditingId === item.id ? (
+                      <input
+                        className="score-input"
+                        max="10"
+                        min="0"
+                        step="0.1"
+                        type="number"
+                        value={scoreValue}
+                        onChange={(event) => setScoreValue(event.target.value)}
+                      />
+                    ) : (
+                      (item.score ?? '-')
+                    )}
+                  </td>
+                  <td>
+                    <div className="row-actions">
+                      {scoreEditingId === item.id ? (
+                        <>
+                          <button
+                            className="button small"
+                            type="button"
+                            onClick={() => handleSaveScore(item.id)}
+                          >
+                            Lưu điểm
+                          </button>
+                          <button
+                            className="button small ghost"
+                            type="button"
+                            onClick={handleCancelEditScore}
+                          >
+                            Hủy
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          className="button small"
+                          type="button"
+                          onClick={() => handleStartEditScore(item)}
+                        >
+                          Sửa điểm
+                        </button>
+                      )}
+                      <button
+                        className="button small danger-outline"
+                        type="button"
+                        onClick={() => setEnrollmentToDelete(item)}
+                      >
+                        Xóa
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

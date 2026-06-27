@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import { useCallback, useEffect, useState } from 'react'
-import ConfirmModal from '../components/ConfirmModal'
-import { courseApi } from '../index'
+import ConfirmModal from '../../components/ConfirmModal'
+import { courseApi } from '../../index'
 
 const emptyCourse = {
   course_code: '',

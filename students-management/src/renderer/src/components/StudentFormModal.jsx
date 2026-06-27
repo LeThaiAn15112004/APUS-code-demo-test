@@ -56,6 +56,14 @@ function getFriendlyErrorMessage(error) {
     return 'Thông tin liên kết không hợp lệ. Vui lòng chọn lại dữ liệu trong danh sách.'
   }
 
+  if (message.includes('chưa đủ môn tiên quyết')) {
+    return error.message
+  }
+
+  if (message.includes('ngừng đào tạo')) {
+    return error.message
+  }
+
   return 'Không thể lưu sinh viên lúc này. Vui lòng kiểm tra thông tin và thử lại.'
 }
 
@@ -71,6 +79,7 @@ function StudentFormModal({
   const [form, setForm] = useState(emptyForm)
   const [formError, setFormError] = useState('')
   const [selectedCourseIds, setSelectedCourseIds] = useState([])
+  const [removedEnrollmentIds, setRemovedEnrollmentIds] = useState([])
   const [courseToRemove, setCourseToRemove] = useState(null)
   const [semester, setSemester] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -81,11 +90,12 @@ function StudentFormModal({
     if (isOpen) {
       setForm(toFormValue(initialStudent))
       setFormError('')
-      setSelectedCourseIds(enrolledCourseIds)
+      setSelectedCourseIds([])
+      setRemovedEnrollmentIds([])
       setCourseToRemove(null)
       setSemester('')
     }
-  }, [enrollments, initialStudent, isOpen])
+  }, [initialStudent, isOpen])
 
   if (!isOpen) return null
 
@@ -95,16 +105,12 @@ function StudentFormModal({
   }
 
   function validateForm() {
-    const addedCourseIds = selectedCourseIds.filter(
-      (courseId) => !enrolledCourseIds.includes(courseId)
-    )
-
     if (!form.student_code.trim()) return 'Vui lòng nhập mã sinh viên.'
     if (!form.full_name.trim()) return 'Vui lòng nhập họ tên sinh viên.'
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       return 'Email không hợp lệ.'
     }
-    if (addedCourseIds.length > 0 && !semester.trim()) {
+    if (selectedCourseIds.length > 0 && !semester.trim()) {
       return 'Vui lòng nhập học kỳ cho khóa học đăng ký mới.'
     }
 
@@ -122,9 +128,7 @@ function StudentFormModal({
   function handleConfirmRemoveCourse() {
     if (!courseToRemove) return
 
-    setSelectedCourseIds((current) =>
-      current.filter((selectedId) => selectedId !== Number(courseToRemove.course_id))
-    )
+    setRemovedEnrollmentIds((current) => [...new Set([...current, Number(courseToRemove.id)])])
     setCourseToRemove(null)
   }
 
@@ -142,10 +146,11 @@ function StudentFormModal({
       setFormError('')
       await onSubmit(form)
       if (isEditing && onSyncCourses) {
-        await onSyncCourses(selectedCourseIds, semester.trim())
+        await onSyncCourses(selectedCourseIds, semester.trim(), removedEnrollmentIds)
       }
       setForm(emptyForm)
       setSelectedCourseIds([])
+      setRemovedEnrollmentIds([])
       setCourseToRemove(null)
       setSemester('')
       onClose()
@@ -160,6 +165,7 @@ function StudentFormModal({
     setFormError('')
     setForm(emptyForm)
     setSelectedCourseIds([])
+    setRemovedEnrollmentIds([])
     setCourseToRemove(null)
     setSemester('')
     onClose()
@@ -285,7 +291,7 @@ function StudentFormModal({
             </label>
             <div className="enrolled-course-list">
               {enrollments
-                .filter((item) => selectedCourseIds.includes(Number(item.course_id)))
+                .filter((item) => !removedEnrollmentIds.includes(Number(item.id)))
                 .map((item) => (
                   <div className="enrolled-course-item" key={item.id}>
                     <div>
@@ -301,7 +307,7 @@ function StudentFormModal({
                     </button>
                   </div>
                 ))}
-              {enrollments.filter((item) => selectedCourseIds.includes(Number(item.course_id)))
+              {enrollments.filter((item) => !removedEnrollmentIds.includes(Number(item.id)))
                 .length === 0 && (
                 <div className="empty-state compact">
                   Sinh viên chưa có khóa học đang được chọn.
@@ -311,20 +317,19 @@ function StudentFormModal({
             <div className="course-choice-list">
               {courses.map((course) => {
                 const courseId = Number(course.id)
-                const isAlreadyEnrolled = enrolledCourseIds.includes(courseId)
+                const wasEnrolledBefore = enrolledCourseIds.includes(courseId)
 
                 return (
                   <label className="course-choice" key={course.id}>
                     <input
                       type="checkbox"
                       checked={selectedCourseIds.includes(courseId)}
-                      disabled={isAlreadyEnrolled}
                       onChange={() => handleCourseToggle(courseId)}
                     />
                     <span>
                       <strong>{course.course_code}</strong>
                       {course.course_name}
-                      {isAlreadyEnrolled && <small>Đã đăng ký</small>}
+                      {wasEnrolledBefore && <small>Đã từng đăng ký</small>}
                     </span>
                   </label>
                 )

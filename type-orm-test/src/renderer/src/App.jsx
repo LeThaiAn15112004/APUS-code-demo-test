@@ -7,6 +7,8 @@ function App() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [editingId, setEditingId] = useState(null)
+  // Thay window.confirm() bằng state-based dialog để tránh Electron mất focus webContents
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
 
   // Fetch todos
   const fetchTodos = async (query = '') => {
@@ -79,16 +81,24 @@ function App() {
     }
   }
 
-  // Delete
+  // Delete — dùng state dialog thay vì window.confirm() để tránh mất focus
   const handleDelete = async (id) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa todo này không?')) return
+    setConfirmDeleteId(id)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDeleteId) return
     try {
-      await todoApi.delete(id)
+      await todoApi.delete(confirmDeleteId)
       fetchTodos(search)
     } catch (error) {
       console.error('Delete failed:', error)
+    } finally {
+      setConfirmDeleteId(null)
     }
   }
+
+  const handleCancelDelete = () => setConfirmDeleteId(null)
 
   return (
     <div style={styles.container}>
@@ -175,6 +185,19 @@ function App() {
           ))
         )}
       </div>
+
+      {/* Confirm dialog — thay thế window.confirm() để không mất focus Electron */}
+      {confirmDeleteId && (
+        <div style={styles.overlay}>
+          <div style={styles.confirmBox}>
+            <p style={styles.confirmText}>Bạn có chắc chắn muốn xóa todo này không?</p>
+            <div style={styles.confirmActions}>
+              <button onClick={handleCancelDelete} style={styles.cancelBtn}>Hủy</button>
+              <button onClick={handleConfirmDelete} style={{ ...styles.cancelBtn, background: '#ef4444', color: '#fff' }}>Xóa</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -327,6 +350,34 @@ const styles = {
     color: '#888',
     fontSize: '14px',
     margin: '20px 0'
+  },
+  overlay: {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(0,0,0,0.55)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000
+  },
+  confirmBox: {
+    background: '#1e1f26',
+    border: '1px solid rgba(255,255,255,0.12)',
+    borderRadius: '12px',
+    padding: '24px',
+    width: '300px',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
+  },
+  confirmText: {
+    color: '#e0e0e0',
+    fontSize: '15px',
+    margin: '0 0 20px 0',
+    lineHeight: 1.5
+  },
+  confirmActions: {
+    display: 'flex',
+    gap: '10px',
+    justifyContent: 'flex-end'
   }
 }
 
