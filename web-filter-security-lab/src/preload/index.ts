@@ -1,22 +1,16 @@
-import { contextBridge } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-
-// Custom APIs for renderer
-const api = {}
-
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
-if (process.contextIsolated) {
-  try {
-    contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
-  } catch (error) {
-    console.error(error)
-  }
-} else {
-  // @ts-ignore (define in dts)
-  window.electron = electronAPI
-  // @ts-ignore (define in dts)
-  window.api = api
+import { IMyAPI } from './index.d'
+// Custom APIs cho renderer
+const api: IMyAPI = {
+  readFile: (path) => require('fs').readFileSync(path, 'utf-8')
 }
+
+// CHỈ gán trực tiếp vào đối tượng window (KHÔNG DÙNG contextBridge)
+// Để kiểm tra sự khác biệt của contextIsolation:
+// - Nếu contextIsolation = false: Renderer và Preload dùng chung window, Renderer SẼ dùng được window.api
+// - Nếu contextIsolation = true: Renderer và Preload có window riêng biệt, Renderer SẼ KHÔNG dùng được window.api (báo undefined)
+
+// @ts-ignore
+window.electron = electronAPI
+// @ts-ignore
+window.api = api

@@ -12,9 +12,8 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      //bật contextIsolation để tách biệt giữa context của main process và renderer process
-      //giúp tăng cường bảo mật
-      contextIsolation: true,
+      contextIsolation: false,
+      nodeIntegration: false,
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     }
