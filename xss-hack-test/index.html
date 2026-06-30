@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://trusted.cdn.com;">
+  <title>Lab nhỏ: hiểu XSS</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 920px;
+      margin: 32px auto;
+      padding: 0 16px;
+      line-height: 1.5;
+      color: #202124;
+    }
+
+    h1, h2 {
+      margin-bottom: 8px;
+    }
+
+    .panel {
+      border: 1px solid #d7dce2;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+      background: #fff;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 12px 0;
+    }
+
+    input {
+      flex: 1 1 420px;
+      padding: 10px 12px;
+      font-size: 15px;
+      border: 1px solid #b8c0cc;
+      border-radius: 6px;
+    }
+
+    button {
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 6px;
+      background: #1a73e8;
+      color: white;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    code, pre {
+      background: #f2f4f7;
+      border-radius: 6px;
+    }
+
+    code {
+      padding: 2px 5px;
+    }
+
+    pre {
+      overflow-x: auto;
+      padding: 12px;
+    }
+
+    .output {
+      min-height: 52px;
+      padding: 12px;
+      border: 1px dashed #9aa4b2;
+      border-radius: 6px;
+      background: #fafafa;
+      word-break: break-word;
+    }
+
+    .danger {
+      border-left: 5px solid #d93025;
+    }
+
+    .safe {
+      border-left: 5px solid #188038;
+    }
+  </style>
+</head>
+<body>
+  <h1>Lab nhỏ: hiểu cách XSS xảy ra</h1>
+  <p>
+    XSS xảy ra khi dữ liệu do người dùng nhập bị đưa vào trang như HTML thật.
+    Trình duyệt không còn xem đó là chữ nữa, mà có thể phân tích thành thẻ,
+    thuộc tính sự kiện, hoặc JavaScript.
+  </p>
+
+  <section class="panel">
+    <h2>1. Nhập thử payload</h2>
+    <p>Dán một trong các chuỗi này vào ô bên dưới:</p>
+    <pre>&lt;img src=x onerror="alert('XSS chạy rồi')"&gt;</pre>
+    <pre>&lt;b style="color:red"&gt;Tôi đã chèn HTML vào trang&lt;/b&gt;</pre>
+
+    <div class="row">
+      <input id="userInput" type="text" placeholder="Nhập text hoặc payload XSS ở đây">
+      <button id="renderButton" type="button">Hiển thị</button>
+    </div>
+  </section>
+
+  <section class="panel danger">
+    <h2>2. Cách dễ bị tấn công: innerHTML</h2>
+    <p>
+      Vùng này dùng <code>innerHTML</code>, nên input có thể bị trình duyệt
+      hiểu là HTML thật.
+    </p>
+    <div id="unsafeOutput" class="output"></div>
+  </section>
+
+  <section class="panel safe">
+    <h2>3. Cách an toàn hơn: textContent</h2>
+    <p>
+      Vùng này dùng <code>textContent</code>, nên input luôn được xem là chữ.
+      Payload sẽ hiện ra nguyên văn và không chạy.
+    </p>
+    <div id="safeOutput" class="output"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Điểm mấu chốt</h2>
+    <p>
+      Lỗi không nằm ở việc người dùng nhập ký tự lạ. Lỗi nằm ở chỗ ứng dụng
+      tin dữ liệu đó và nhét thẳng vào DOM bằng API có thể diễn dịch HTML.
+    </p>
+    <pre>unsafeOutput.innerHTML = input;   // nguy hiểm nếu input chưa được làm sạch
+safeOutput.textContent = input;   // an toàn hơn khi chỉ cần hiển thị chữ</pre>
+  </section>
+
+  <script>
+    const input = document.getElementById('userInput');
+    const renderButton = document.getElementById('renderButton');
+    const unsafeOutput = document.getElementById('unsafeOutput');
+    const safeOutput = document.getElementById('safeOutput');
+
+    function renderInput() {
+      const value = input.value;
+
+      // DEMO LỖ HỔNG: innerHTML biến chuỗi người dùng nhập thành HTML thật.
+      unsafeOutput.innerHTML = 'Bạn đã nhập: ' + value;
+
+      // CÁCH AN TOÀN: textContent chỉ hiển thị như văn bản.
+      safeOutput.textContent = 'Bạn đã nhập: ' + value;
+    }
+
+    renderButton.addEventListener('click', renderInput);
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        renderInput();
+      }
+    });
+  </script>
+</body>
+</html>

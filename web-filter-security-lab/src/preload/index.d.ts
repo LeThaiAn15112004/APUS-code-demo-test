@@ -8,6 +8,12 @@ declare global {
   interface Window {
     electron: ElectronAPI
     api: IMyAPI
+    badAPI: {
+      send: (channel: string, payload?: unknown) => void
+    }
+    safeAPI: {
+      ping: () => void
+    }
     isolationDemo: {
       status: string
       isIsolated: boolean

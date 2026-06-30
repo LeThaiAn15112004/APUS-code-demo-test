@@ -1,7 +1,39 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { session } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+
+function setupContentSecurityPolicy(): void {
+  const scriptSrc = is.dev
+    ? "script-src 'self' 'unsafe-inline' http://localhost:* https://trusted.cdn.com"
+    : "script-src 'self' https://trusted.cdn.com"
+  const connectSrc = is.dev
+    ? "connect-src 'self' http://localhost:* ws://localhost:*"
+    : "connect-src 'self'"
+
+  const csp = [
+    "default-src 'self'",
+    scriptSrc,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data:",
+    connectSrc,
+    "font-src 'self'",
+    "frame-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'"
+  ].join('; ')
+
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [csp]
+      }
+    })
+  })
+}
 
 function createWindow(): void {
   // Create the browser window.
@@ -12,7 +44,7 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      contextIsolation: false,
+      contextIsolation: true,
       nodeIntegration: false,
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -43,6 +75,7 @@ function createWindow(): void {
 app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
+  setupContentSecurityPolicy()
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -52,7 +85,33 @@ app.whenReady().then(() => {
   })
 
   // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  ipcMain.on('ping', () =>
+    console.log('chỉ xứ lý ping, không có channel nguy hiểm nào được expose cho Renderer')
+  )
+
+  // Sensitive internal channel demo.
+  // Main chi log canh bao, KHONG xoa gi that.
+  // Neu preload expose generic send(channel, payload), Renderer co the goi channel nay
+  // du app khong he co button/chuc nang hop le cho viec do.
+  ipcMain.on('danger:delete-all-data', (_event, payload) => {
+    console.warn('[DANGER DEMO] Renderer da goi duoc channel nhay cam:', payload)
+  })
+
+  ipcMain.on('auth:set-role', (_event, payload) => {
+    console.warn('[DANGER DEMO] Renderer da yeu cau doi role nguoi dung:', payload)
+  })
+
+  ipcMain.on('webfilter:disable', (_event, payload) => {
+    console.warn('[DANGER DEMO] Renderer da yeu cau tat web filter:', payload)
+  })
+
+  ipcMain.on('settings:write', (_event, payload) => {
+    console.warn('[DANGER DEMO] Renderer da yeu cau ghi settings noi bo:', payload)
+  })
+
+  ipcMain.on('debug:run-command', (_event, payload) => {
+    console.warn('[DANGER DEMO] Renderer da yeu cau chay debug command:', payload)
+  })
 
   createWindow()
 

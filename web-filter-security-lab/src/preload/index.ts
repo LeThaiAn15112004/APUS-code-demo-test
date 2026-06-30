@@ -1,16 +1,41 @@
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { IMyAPI } from './index.d'
-// Custom APIs cho renderer
+import type { IMyAPI } from './index.d'
+
 const api: IMyAPI = {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   readFile: (path) => require('fs').readFileSync(path, 'utf-8')
 }
 
-// CHỈ gán trực tiếp vào đối tượng window (KHÔNG DÙNG contextBridge)
-// Để kiểm tra sự khác biệt của contextIsolation:
-// - Nếu contextIsolation = false: Renderer và Preload dùng chung window, Renderer SẼ dùng được window.api
-// - Nếu contextIsolation = true: Renderer và Preload có window riêng biệt, Renderer SẼ KHÔNG dùng được window.api (báo undefined)
+// ❌ BAD API - Mất an toàn
+const badAPI = {
+  send: (channel, payload) => ipcRenderer.send(channel, payload)
+  // RỦI RO: Renderer có thể gửi bất kỳ channel nào, 
+  // dễ bị tấn công khai thác IPC.
+}
 
-// @ts-ignore
-window.electron = electronAPI
-// @ts-ignore
-window.api = api
+// ✅ SAFE API - Bảo mật
+const safeAPI = {
+  ping: () => ipcRenderer.send('ping')
+  // AN TOÀN: Renderer chỉ được gọi đúng hàm 'ping'.
+  // Kiểm soát chặt chẽ đầu vào.
+}
+
+if (process.contextIsolated) {
+  contextBridge.exposeInMainWorld('electron', electronAPI)
+  contextBridge.exposeInMainWorld('api', api)
+  contextBridge.exposeInMainWorld('badAPI', badAPI)
+  contextBridge.exposeInMainWorld('safeAPI', safeAPI)
+
+  contextBridge.exposeInMainWorld('isolationDemo', {
+    status: 'Renderer nhan API thong qua contextBridge',
+    isIsolated: true
+  })
+} else {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.electron = electronAPI
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.api = api
+}
